@@ -22,7 +22,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
       padding: 1.5rem;
     }
 
@@ -39,7 +39,7 @@
       font-size: 24px;
       font-weight: 700;
       margin-bottom: 0.5rem;
-      color: #1e40af;
+      color: #1f2937;
     }
 
     .login-box p {
@@ -60,25 +60,28 @@
       margin-bottom: 8px;
     }
 
-    .form-group input {
+    .form-group input,
+    .form-group select {
       width: 100%;
       padding: 12px;
       border: 1.5px solid #ddd;
       border-radius: 8px;
       font-size: 14px;
       transition: all 0.3s;
+      font-family: inherit;
     }
 
-    .form-group input:focus {
+    .form-group input:focus,
+    .form-group select:focus {
       outline: none;
-      border-color: #1e40af;
-      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+      border-color: #1f2937;
+      box-shadow: 0 0 0 3px rgba(31, 41, 55, 0.1);
     }
 
     .login-btn {
       width: 100%;
       padding: 12px;
-      background: #1e40af;
+      background: #1f2937;
       color: white;
       border: none;
       border-radius: 8px;
@@ -89,9 +92,9 @@
     }
 
     .login-btn:hover {
-      background: #1e3a8a;
+      background: #111827;
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(30, 64, 175, 0.3);
+      box-shadow: 0 8px 20px rgba(31, 41, 55, 0.3);
     }
 
     .error {
@@ -116,7 +119,7 @@
     }
 
     .dashboard-header {
-      background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
       color: white;
       padding: 1.5rem;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -148,7 +151,7 @@
 
     .logout-btn:hover {
       background: white;
-      color: #1e40af;
+      color: #1f2937;
     }
 
     .dashboard-content {
@@ -178,7 +181,7 @@
     .cafe-admin-name {
       font-size: 18px;
       font-weight: 700;
-      color: #1e40af;
+      color: #1f2937;
     }
 
     .status-toggle {
@@ -247,8 +250,8 @@
     .form-row input:focus,
     .form-row textarea:focus {
       outline: none;
-      border-color: #1e40af;
-      box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+      border-color: #1f2937;
+      box-shadow: 0 0 0 3px rgba(31, 41, 55, 0.1);
     }
 
     .save-btn {
@@ -314,9 +317,8 @@
       <form onsubmit="handleLogin(event)">
         <div class="form-group">
           <label for="cafeName">Select Your Cafe</label>
-          <select id="cafeName" style="width: 100%; padding: 12px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 14px;">
+          <select id="cafeName" required>
             <option value="">-- Choose your cafe --</option>
-            <option value="Cafe Lestari">Cafe Lestari</option>
             <option value="Cafe EastCoast">Cafe EastCoast</option>
             <option value="Cafe Lanita">Cafe Lanita</option>
             <option value="Cafe Navy Blue">Cafe Navy Blue</option>
@@ -335,7 +337,7 @@
 
       <p style="margin-top: 1.5rem; font-size: 12px; color: #999; text-align: center;">
         Default password is your cafe name (case-sensitive)<br>
-        Example: "Cafe Lestari"
+        Example: "Cafe EastCoast"
       </p>
     </div>
   </div>
@@ -382,11 +384,11 @@
         <div class="success-msg" id="successMsg">✓ Changes saved successfully!</div>
       </div>
 
-      <div class="cafe-admin-card" style="background: #f9f9f9; border-left: 4px solid #fbbf24;">
-        <h3 style="color: #1e40af; margin-bottom: 1rem; font-size: 16px;">Preview on Main Website</h3>
+      <div class="cafe-admin-card" style="background: #f9f9f9; border-left: 4px solid #f97316;">
+        <h3 style="color: #1f2937; margin-bottom: 1rem; font-size: 16px;">Preview on Main Website</h3>
         <p style="color: #666; font-size: 14px; line-height: 1.6;">
           Your updates will appear on the main website:<br>
-          <strong style="color: #1e40af;">https://your-username.github.io/arked-lestari-cafe-finder</strong>
+          <strong style="color: #1f2937;">https://your-username.github.io/arked-lestari-cafe-finder</strong>
         </p>
         <p style="color: #999; font-size: 13px; margin-top: 1rem;">
           Changes appear instantly. No need to wait for updates!
@@ -405,7 +407,6 @@
   <script>
     // Cafe passwords (cafe name = password for now)
     const CAFE_PASSWORDS = {
-      'Cafe Lestari': 'Cafe Lestari',
       'Cafe EastCoast': 'Cafe EastCoast',
       'Cafe Lanita': 'Cafe Lanita',
       'Cafe Navy Blue': 'Cafe Navy Blue',
