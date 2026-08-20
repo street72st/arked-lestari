@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Arked Lestari Cafe Finder - UTM</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>☕</text></svg>">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: #f8f9fa;
+      color: #2c3e50;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+      color: white;
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      border-bottom: 5px solid #fbbf24;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.5px;
+    }
+
+    .header p {
+      font-size: 15px;
+      opacity: 0.95;
+      font-weight: 300;
+    }
+
+    .utm-badge {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.2);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 1rem;
+    }
+
+    .admin-link {
+      position: absolute;
+      top: 1rem;
+      right: 1.5rem;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.3s;
+      border: 1px solid rgba(255, 255, 255, 0.3);
+    }
+
+    .admin-link:hover {
+      background: rgba(255, 255, 255, 0.3);
+      border-color: white;
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+    }
+
+    .filter-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .filter-btn {
+      padding: 10px 20px;
+      border: 1.5px solid #ddd;
+      background: white;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      color: #555;
+    }
+
+    .filter-btn:hover {
+      border-color: #1e40af;
+      color: #1e40af;
+      transform: translateY(-2px);
+    }
+
+    .filter-btn.active {
+      background: #1e40af;
+      color: white;
+      border-color: #1e40af;
+      box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+    }
+
+    .cafe-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      margin-bottom: 2rem;
+    }
+
+    .cafe-card {
+      background: white;
+      border: 1px solid #e8e8e8;
+      border-radius: 12px;
+      padding: 1.5rem;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .cafe-card:hover {
+      border-color: #1e40af;
+      box-shadow: 0 8px 20px rgba(30, 64, 175, 0.15);
+      transform: translateY(-4px);
+    }
+
+    .cafe-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 14px;
+      gap: 12px;
+    }
+
+    .cafe-name {
+      font-size: 17px;
+      font-weight: 700;
+      color: #1e40af;
+      flex: 1;
+    }
+
+    .status-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .status-open {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .status-closed {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    .cafe-info {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .cafe-info-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .cafe-info-item svg {
+      width: 18px;
+      height: 18px;
+      flex-shrink: 0;
+      color: #1e40af;
+    }
+
+    .special {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-left: 4px solid #fbbf24;
+      padding: 12px 14px;
+      border-radius: 6px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #78350f;
+      line-height: 1.5;
+    }
+
+    .special-title {
+      display: block;
+      font-weight: 700;
+      color: #92400e;
+      margin-bottom: 4px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .no-special {
+      color: #aaa;
+      font-style: italic;
+      font-size: 13px;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      color: #999;
+      font-size: 13px;
+    }
+
+    .footer a {
+      color: #1e40af;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      .header h1 {
+        font-size: 26px;
+      }
+
+      .cafe-card {
+        padding: 1.25rem;
+      }
+
+      .cafe-header {
+        flex-direction: column;
+      }
+
+      .status-badge {
+        align-self: flex-start;
+      }
+
+      .admin-link {
+        position: static;
+        margin-bottom: 1rem;
+        display: inline-block;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="admin.html" class="admin-link">🔧 Cafe Admin</a>
+    <h1>☕ Arked Lestari Cafe Finder</h1>
+    <p>Find what's open and grab your daily dose of caffeine</p>
+    <div class="utm-badge">Universiti Teknologi Malaysia</div>
+  </div>
+
+  <div class="container">
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterCafes('all')">All cafes</button>
+      <button class="filter-btn" onclick="filterCafes('open')">Open now</button>
+      <button class="filter-btn" onclick="filterCafes('special')">Has specials</button>
+    </div>
+
+    <div class="cafe-grid" id="cafeGrid">
+      <!-- Cafes will be loaded here by JavaScript -->
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Last updated: <span id="updateTime">Today</span></p>
+    <p>Made for Arked Lestari residents • <a href="admin.html">Cafe owners login here</a></p>
+  </div>
+
+  <script>
+    // Default cafe data
+    const DEFAULT_CAFES = {
+      'Cafe Lestari': {
+        location: 'Lestari Residence',
+        hours: '7:00 AM - 10:00 PM',
+        status: 'open',
+        special: 'Buy 1 drink, get free pastry with student card'
+      },
+      'Cafe EastCoast': {
+        location: 'East Coast Block',
+        hours: '8:00 AM - 9:00 PM',
+        status: 'open',
+        special: 'Nasi Lemak Combo - RM 6.50 (usually RM 8)'
+      },
+      'Cafe Lanita': {
+        location: 'Lanita Residence',
+        hours: '7:30 AM - 7:00 PM',
+        status: 'open',
+        special: null
+      },
+      'Cafe Navy Blue': {
+        location: 'Navy Blue Residence',
+        hours: '8:00 AM - 8:30 PM',
+        status: 'open',
+        special: 'Free milo upgrade to large with any food order'
+      },
+      'Cafe Western': {
+        location: 'Western Block',
+        hours: '10:00 AM - 6:00 PM',
+        status: 'closed',
+        special: null
+      },
+      'Cafe Ajimory': {
+        location: 'Ajimory Residence',
+        hours: '7:00 AM - 9:30 PM',
+        status: 'open',
+        special: 'Roti Canai + Curry (2 pieces) - RM 5 with ID verification'
+      }
+    };
+
+    function getCafeData() {
+      const savedData = JSON.parse(localStorage.getItem('cafeData')) || {};
+      
+      // Merge saved data with defaults
+      const merged = {};
+      Object.keys(DEFAULT_CAFES).forEach(cafeName => {
+        merged[cafeName] = {
+          ...DEFAULT_CAFES[cafeName],
+          ...savedData[cafeName]
+        };
+      });
+      
+      return merged;
+    }
+
+    function renderCafes() {
+      const cafeGrid = document.getElementById('cafeGrid');
+      const cafeData = getCafeData();
+      
+      cafeGrid.innerHTML = Object.entries(cafeData).map(([cafeName, data]) => {
+        const hasSpecial = data.special && data.special.trim() !== '';
+        const statusClass = data.status === 'open' ? 'status-open' : 'status-closed';
+        const statusText = data.status === 'open' ? 'Open' : 'Closed';
+        
+        return `
+          <div class="cafe-card" data-cafe="${cafeName}" data-status="${data.status}" data-has-special="${hasSpecial}">
+            <div class="cafe-header">
+              <div class="cafe-name">${cafeName}</div>
+              <span class="status-badge ${statusClass}">${statusText}</span>
+            </div>
+            <div class="cafe-info">
+              <div class="cafe-info-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>${data.hours}</span>
+              </div>
+              <div class="cafe-info-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span>${data.location}</span>
+              </div>
+            </div>
+            <div class="special">
+              ${hasSpecial 
+                ? `<span class="special-title">Today's Special</span>${data.special}` 
+                : '<span class="no-special">No specials today</span>'
+              }
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterCafes(type) {
+      const cards = document.querySelectorAll('.cafe-card');
+      const buttons = document.querySelectorAll('.filter-btn');
+
+      buttons.forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+
+      cards.forEach(card => {
+        let show = false;
+        const status = card.dataset.status;
+        const hasSpecial = card.dataset.hasSpecial === 'true';
+
+        if (type === 'all') {
+          show = true;
+        } else if (type === 'open') {
+          show = status === 'open';
+        } else if (type === 'special') {
+          show = hasSpecial;
+        }
+
+        card.style.display = show ? 'block' : 'none';
+      });
+    }
+
+    // Listen for changes from admin panel
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'cafeData' || e.key === 'cafeDataUpdated') {
+        renderCafes();
+      }
+    });
+
+    // Initial render
+    renderCafes();
+
+    // Update timestamp
+    document.getElementById('updateTime').textContent = new Date().toLocaleDateString('en-US', {
+      weekday: 'long',
+      month: 'short',
+      day: 'numeric'
+    });
+  </script>
+</body>
+</html>
