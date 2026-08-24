@@ -19,15 +19,13 @@
     .admin-link {
       display: inline-block; margin-top: 14px; background: rgba(255,255,255,0.15);
       color: #fff; text-decoration: none; padding: 8px 18px; border-radius: 20px;
-      font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);
-      transition: all 0.2s;
+      font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3); transition: all 0.2s;
     }
     .admin-link:hover { background: #f97316; border-color: #f97316; }
 
     .filter-section {
       background: white; padding: 1.25rem 1.5rem; margin: 1.5rem auto 0; max-width: 900px;
-      border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-      display: flex; gap: 10px; flex-wrap: wrap;
+      border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; gap: 10px; flex-wrap: wrap;
     }
     .filter-btn {
       padding: 8px 16px; border: 2px solid #ddd; background: white; color: #666;
@@ -35,6 +33,8 @@
     }
     .filter-btn.active { background: #1f2937; color: white; border-color: #1f2937; }
     .filter-btn:hover { border-color: #1f2937; }
+
+    .status-line { max-width: 900px; margin: 1rem auto 0; padding: 0 1.5rem; font-size: 13px; color: #888; text-align: center; }
 
     .cafe-grid { display: grid; gap: 1.5rem; padding: 1.5rem; max-width: 900px; margin: 0 auto; }
     .cafe-card {
@@ -62,6 +62,7 @@
       text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;
     }
     .no-special { display: block; font-style: italic; color: #b45309; }
+    .loading { text-align: center; padding: 3rem; color: #999; font-size: 15px; }
 
     @media (max-width: 600px) {
       .header h1 { font-size: 24px; }
@@ -74,7 +75,6 @@
   <div class="header">
     <h1>&#9749; Arked Lestari</h1>
     <p>Cafe Directory &middot; UTM Campus</p>
-    <p style="font-size:12px;margin-top:8px;">Last updated: <span id="updateTime">--</span></p>
     <a href="admin.html" class="admin-link">&#128100; Cafe Owner? Admin Panel &rarr;</a>
   </div>
 
@@ -84,41 +84,55 @@
     <button class="filter-btn" onclick="filterCafes('special', event)">Today's Special</button>
   </div>
 
-  <div class="cafe-grid" id="cafeGrid"></div>
+  <div class="status-line" id="statusLine">Connecting to live data...</div>
+
+  <div class="cafe-grid" id="cafeGrid">
+    <div class="loading">Loading cafes...</div>
+  </div>
+
+  <!-- Firebase SDK (compat - matches your admin panel) -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
-    // The 5 official cafes (display names)
+    // ===== Firebase config (same project as your admin panel) =====
+    const firebaseConfig = {
+      apiKey: "AIzaSyBYMXrWKpAh1deuuhUdUM8t31zJnMjAFrY",
+      authDomain: "makan-utm.firebaseapp.com",
+      projectId: "makan-utm",
+      storageBucket: "makan-utm.firebasestorage.app",
+      messagingSenderId: "243510334532",
+      appId: "1:243510334532:web:c829ba0da63ebad3ea1811"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // The 5 official cafes the site always shows (even before any owner has saved data)
     const CAFES = ['Cafe EastCoast', 'Cafe Lanita', 'Cafe Navy Blue', 'Cafe Western', 'Cafe Ajimory'];
 
-    // Read all saved data
-    function getAllData() {
-      try { return JSON.parse(localStorage.getItem('cafeData')) || {}; }
-      catch (e) { return {}; }
-    }
-
-    // SAFETY NET: find a cafe's data even if the saved key has different
-    // capitalisation or extra spaces (e.g. "Cafe Eastcoast" vs "Cafe EastCoast").
-    function findCafeData(all, officialName) {
-      // 1. Exact match first
-      if (all[officialName]) return all[officialName];
-      // 2. Case-insensitive / trimmed match
-      const target = officialName.toLowerCase().replace(/\s+/g, ' ').trim();
-      for (const key in all) {
-        const norm = key.toLowerCase().replace(/\s+/g, ' ').trim();
-        if (norm === target) return all[key];
-      }
-      return null;
-    }
-
+    // Holds the latest data from Firestore, keyed by cafe name
+    let liveData = {};
     let currentFilter = 'all';
-    let lastSnapshot = '';
+
+    // ===== Read from Firestore in REAL TIME =====
+    // onSnapshot fires immediately with current data, then AGAIN automatically
+    // every time any cafe owner saves a change - on every visitor's device at once.
+    db.collection('cafes').onSnapshot((snapshot) => {
+      liveData = {};
+      snapshot.forEach(doc => { liveData[doc.id] = doc.data(); });
+      document.getElementById('statusLine').textContent =
+        'Live \u00b7 updates automatically \u00b7 ' + new Date().toLocaleTimeString();
+      render();
+    }, (error) => {
+      console.error('Firestore read error:', error);
+      document.getElementById('statusLine').textContent =
+        '\u26a0 Could not load live data. Check your connection.';
+    });
 
     function render() {
-      const all = getAllData();
       const grid = document.getElementById('cafeGrid');
-
       grid.innerHTML = CAFES.map(cafeName => {
-        const data = findCafeData(all, cafeName) || {};
+        const data = liveData[cafeName] || {};
         const status   = data.status   || 'open';
         const hours    = data.hours    || '7:00 AM - 10:00 PM';
         const location = data.location || '';
@@ -137,15 +151,13 @@
             <div class="cafe-info">
               <div class="cafe-info-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
+                  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
                 </svg>
                 <span>${hours}</span>
               </div>
               <div class="cafe-info-item">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                  <circle cx="12" cy="10" r="3"></circle>
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>
                 </svg>
                 <span>${location || 'Location not set'}</span>
               </div>
@@ -158,9 +170,7 @@
           </div>
         `;
       }).join('');
-
       applyFilter();
-      document.getElementById('updateTime').textContent = new Date().toLocaleTimeString();
     }
 
     function applyFilter() {
@@ -180,21 +190,6 @@
       if (ev && ev.target) ev.target.classList.add('active');
       applyFilter();
     }
-
-    // Auto-update: re-render only when the data actually changes
-    function checkForChanges() {
-      const snapshot = localStorage.getItem('cafeData') || '';
-      if (snapshot !== lastSnapshot) {
-        lastSnapshot = snapshot;
-        render();
-      }
-    }
-    setInterval(checkForChanges, 500);
-    window.addEventListener('storage', render); // cross-tab
-
-    // First paint
-    lastSnapshot = localStorage.getItem('cafeData') || '';
-    render();
   </script>
 </body>
 </html>
