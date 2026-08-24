@@ -7,94 +7,162 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>&#9749;</text></svg>">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; background: #f8f9fa; color: #2c3e50; }
+    :root {
+      --bg: #0d0f14;
+      --surface: #161a22;
+      --surface-2: #12151c;
+      --border: #232935;
+      --border-hi: #2f3646;
+      --amber: #f0a04b;
+      --amber-dim: #b98543;
+      --open: #4ade80;
+      --closed: #94a3b8;
+      --text: #f4f4f5;
+      --text-2: #9ca3af;
+      --text-3: #6b7280;
+      --text-4: #4b5563;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: var(--bg); color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      max-width: 640px; margin: 0 auto;
+    }
+
+    @keyframes breathe { 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:.55; transform:scale(.82);} }
+    @keyframes ring { 0%{transform:scale(1); opacity:.6;} 100%{transform:scale(2.6); opacity:0;} }
+    @keyframes fadeup { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+    @media (prefers-reduced-motion: reduce) {
+      .dot.on, .dot.on::after, .card { animation: none !important; }
+    }
 
     .header {
-      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-      color: white; padding: 2.5rem 1.5rem; text-align: center;
-      border-bottom: 5px solid #f97316; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      padding: 30px 20px 22px;
+      background: linear-gradient(180deg, var(--surface-2) 0%, var(--bg) 100%);
+      border-bottom: 1px solid #1c212b;
     }
-    .header h1 { font-size: 32px; font-weight: 700; margin-bottom: 0.5rem; }
-    .header p { font-size: 15px; opacity: 0.95; }
+    .brand {
+      display: flex; align-items: center; gap: 9px; margin-bottom: 5px;
+    }
+    .brand-mark { font-size: 22px; }
+    .brand-name {
+      font-size: 12px; font-weight: 600; letter-spacing: .18em;
+      text-transform: uppercase; color: var(--amber);
+    }
+    .header h1 {
+      font-size: 26px; font-weight: 700; letter-spacing: -.02em;
+      margin-bottom: 5px; line-height: 1.15;
+    }
+    .header .sub { font-size: 13px; color: var(--text-3); }
+    .header .live {
+      display: inline-flex; align-items: center; gap: 6px;
+      font-size: 12px; color: var(--text-3); margin-top: 3px;
+    }
+    .live-dot {
+      width: 6px; height: 6px; border-radius: 50%; background: var(--open);
+      animation: breathe 2.4s ease-in-out infinite;
+    }
     .admin-link {
-      display: inline-block; margin-top: 14px; background: rgba(255,255,255,0.15);
-      color: #fff; text-decoration: none; padding: 8px 18px; border-radius: 20px;
-      font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3); transition: all 0.2s;
+      display: inline-flex; align-items: center; gap: 6px; margin-top: 16px;
+      background: rgba(240,160,75,.1); color: var(--amber); text-decoration: none;
+      padding: 9px 16px; border-radius: 22px; font-size: 12px; font-weight: 600;
+      border: 1px solid rgba(240,160,75,.25); transition: all .2s;
     }
-    .admin-link:hover { background: #f97316; border-color: #f97316; }
+    .admin-link:active { background: rgba(240,160,75,.2); }
 
-    .filter-section {
-      background: white; padding: 1.25rem 1.5rem; margin: 1.5rem auto 0; max-width: 900px;
-      border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; gap: 10px; flex-wrap: wrap;
-    }
+    .filters { display: flex; gap: 8px; padding: 16px 16px 4px; }
     .filter-btn {
-      padding: 8px 16px; border: 2px solid #ddd; background: white; color: #666;
-      border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;
+      flex: 1; background: var(--surface); color: var(--text-2);
+      border: 1px solid var(--border); border-radius: 10px; padding: 10px;
+      font-size: 13px; font-weight: 500; cursor: pointer; transition: all .15s;
+      font-family: inherit;
     }
-    .filter-btn.active { background: #1f2937; color: white; border-color: #1f2937; }
-    .filter-btn:hover { border-color: #1f2937; }
+    .filter-btn.active {
+      background: var(--amber); color: #1a1205; border-color: var(--amber); font-weight: 600;
+    }
 
-    .status-line { max-width: 900px; margin: 1rem auto 0; padding: 0 1.5rem; font-size: 13px; color: #888; text-align: center; }
+    .grid { padding: 12px 16px 28px; }
+    .card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 14px; padding: 16px 16px 14px; margin-bottom: 12px;
+      animation: fadeup .35s ease both;
+    }
+    .card.is-open { border-color: #2a3320; }
 
-    .cafe-grid { display: grid; gap: 1.5rem; padding: 1.5rem; max-width: 900px; margin: 0 auto; }
-    .cafe-card {
-      background: white; border-radius: 10px; overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;
+    .card-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 12px; gap: 12px;
     }
-    .cafe-card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
-    .cafe-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 1.25rem; border-bottom: 1px solid #f0f0f0; background: #fafafa;
+    .cafe-name { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+    .cafe-loc {
+      font-size: 12px; color: var(--text-3);
+      display: flex; align-items: center; gap: 5px;
     }
-    .cafe-name { font-size: 18px; font-weight: 700; color: #1f2937; }
-    .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
-    .status-badge.open { background: #dcfce7; color: #166534; }
-    .status-badge.closed { background: #fee2e2; color: #991b1b; }
-    .cafe-info { padding: 1.25rem; display: flex; flex-direction: column; gap: 10px; }
-    .cafe-info-item { display: flex; align-items: center; gap: 12px; color: #666; font-size: 14px; }
-    .cafe-info-item svg { width: 20px; height: 20px; flex-shrink: 0; color: #999; }
+    .cafe-loc .ic { opacity: .7; }
+
+    .pill {
+      font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 11px 5px 9px; border-radius: 20px; white-space: nowrap; flex-shrink: 0;
+    }
+    .pill.on { background: rgba(74,222,128,.12); color: var(--open); }
+    .pill.off { background: rgba(148,163,184,.12); color: var(--closed); }
+    .dot { width: 9px; height: 9px; border-radius: 50%; position: relative; }
+    .dot.on { background: var(--open); animation: breathe 2.4s ease-in-out infinite; }
+    .dot.on::after {
+      content:''; position:absolute; inset:0; border-radius:50%;
+      background: var(--open); animation: ring 2.4s ease-out infinite;
+    }
+    .dot.off { background: var(--closed); }
+
+    .hours {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--text-2); margin-bottom: 12px;
+    }
+    .hours .ic { opacity: .6; }
+
     .special {
-      padding: 1rem 1.25rem; background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
-      border-top: 1px solid #fbbf24; font-size: 14px; color: #92400e; line-height: 1.6;
+      background: linear-gradient(135deg, #2a2010, #1f180b);
+      border: 1px solid #3d2f14; border-radius: 10px; padding: 11px 13px;
     }
-    .special-title {
-      display: block; font-weight: 700; margin-bottom: 6px; color: #b45309;
-      text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;
+    .special-label {
+      font-size: 10px; font-weight: 700; letter-spacing: .08em;
+      text-transform: uppercase; color: var(--amber); margin-bottom: 4px;
     }
-    .no-special { display: block; font-style: italic; color: #b45309; }
-    .cafe-updated {
-      padding: 8px 1.25rem; font-size: 11px; color: #9ca3af; text-align: right;
-      background: #fafafa; border-top: 1px solid #f0f0f0; letter-spacing: 0.2px;
+    .special-text { font-size: 13px; color: #e8d5b5; line-height: 1.5; }
+    .no-special {
+      font-size: 12px; font-style: italic; color: #5b6472; padding: 6px 0 2px;
     }
-    .loading { text-align: center; padding: 3rem; color: #999; font-size: 15px; }
-
-    @media (max-width: 600px) {
-      .header h1 { font-size: 24px; }
-      .filter-section { margin: 1rem; padding: 1rem; }
-      .cafe-grid { padding: 1rem; }
+    .updated {
+      font-size: 10px; color: var(--text-4); text-align: right; margin-top: 9px;
     }
+    .loading { text-align: center; padding: 3rem; color: var(--text-3); font-size: 14px; }
+    .empty { text-align: center; padding: 2.5rem 1rem; color: var(--text-3); font-size: 14px; }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>&#9749; Arked Lestari</h1>
-    <p>Cafe Directory &middot; UTM Campus</p>
-    <a href="admin.html" class="admin-link">&#128100; Cafe Owner? Admin Panel &rarr;</a>
+    <div class="brand">
+      <span class="brand-mark">&#9749;</span>
+      <span class="brand-name">Arked Lestari</span>
+    </div>
+    <h1>What's open right now</h1>
+    <div class="sub">6 cafes &middot; UTM campus</div>
+    <div class="live"><span class="live-dot"></span><span id="liveStatus">Connecting&hellip;</span></div>
+    <br>
+    <a href="admin.html" class="admin-link">&#128100; Cafe owner? Admin panel &rarr;</a>
   </div>
 
-  <div class="filter-section">
-    <button class="filter-btn active" onclick="filterCafes('all', event)">All Cafes</button>
-    <button class="filter-btn" onclick="filterCafes('open', event)">Open Now</button>
-    <button class="filter-btn" onclick="filterCafes('special', event)">Today's Special</button>
+  <div class="filters">
+    <button class="filter-btn active" onclick="filterCafes('all', event)">All</button>
+    <button class="filter-btn" onclick="filterCafes('open', event)">Open now</button>
+    <button class="filter-btn" onclick="filterCafes('special', event)">Specials</button>
   </div>
 
-  <div class="status-line" id="statusLine">Connecting to live data...</div>
-
-  <div class="cafe-grid" id="cafeGrid">
-    <div class="loading">Loading cafes...</div>
+  <div class="grid" id="cafeGrid">
+    <div class="loading">Loading cafes&hellip;</div>
   </div>
 
-  <!-- Firebase SDK (compat - matches your admin panel) -->
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
@@ -111,80 +179,61 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // The 5 official cafes the site always shows (even before any owner has saved data)
     const CAFES = ['Cafe EastCoast', 'Cafe Lanita', 'Cafe Navy Blue', 'Cafe Western', 'Cafe Ajimory', 'Cafe PakLah'];
 
-    // Holds the latest data from Firestore, keyed by cafe name
     let liveData = {};
     let currentFilter = 'all';
 
-    // ===== Read from Firestore in REAL TIME =====
-    // onSnapshot fires immediately with current data, then AGAIN automatically
-    // every time any cafe owner saves a change - on every visitor's device at once.
+    // ===== Real-time read from Firestore =====
     db.collection('cafes').onSnapshot((snapshot) => {
       liveData = {};
       snapshot.forEach(doc => { liveData[doc.id] = doc.data(); });
-      document.getElementById('statusLine').textContent =
-        'Live \u00b7 updates automatically \u00b7 ' + new Date().toLocaleTimeString();
+      document.getElementById('liveStatus').textContent =
+        'Live \u00b7 updated ' + new Date().toLocaleTimeString('en-US', {hour:'numeric', minute:'2-digit'});
       render();
     }, (error) => {
       console.error('Firestore read error:', error);
-      document.getElementById('statusLine').textContent =
-        '\u26a0 Could not load live data. Check your connection.';
+      document.getElementById('liveStatus').textContent = 'Offline \u2014 check connection';
     });
 
-    // Turn a Firestore timestamp into a friendly "Updated: 24 Aug 2026, 11:45 AM"
-    // Handles the case where a cafe has never been updated yet.
+    // Friendly "Updated: 24 Aug 2026, 11:45 AM" or "Not updated yet"
     function formatUpdated(ts) {
-      if (!ts || typeof ts.toDate !== 'function') {
-        return 'Not updated yet';
-      }
+      if (!ts || typeof ts.toDate !== 'function') return 'Not updated yet';
       const d = ts.toDate();
-      const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
       const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
-      return 'Updated: ' + date + ', ' + time;
+      return 'Updated ' + date + ', ' + time;
     }
 
     function render() {
       const grid = document.getElementById('cafeGrid');
-      grid.innerHTML = CAFES.map(cafeName => {
+      grid.innerHTML = CAFES.map((cafeName, i) => {
         const data = liveData[cafeName] || {};
         const status   = data.status   || 'open';
         const hours    = data.hours    || '7:00 AM - 10:00 PM';
         const location = data.location || '';
         const special  = data.special  || '';
+        const updated  = formatUpdated(data.updatedAt);
 
         const hasSpecial = special.trim().length > 0;
-        const statusClass = status === 'open' ? 'open' : 'closed';
-        const statusText  = status === 'open' ? 'Open' : 'Closed';
-        const updated = formatUpdated(data.updatedAt);
+        const isOpen = status === 'open';
 
         return `
-          <div class="cafe-card" data-status="${status}" data-has-special="${hasSpecial}">
-            <div class="cafe-header">
-              <div class="cafe-name">${cafeName}</div>
-              <span class="status-badge ${statusClass}">${statusText}</span>
-            </div>
-            <div class="cafe-info">
-              <div class="cafe-info-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-                <span>${hours}</span>
+          <div class="card ${isOpen ? 'is-open' : ''}" data-status="${status}" data-has-special="${hasSpecial}" style="animation-delay:${i*40}ms">
+            <div class="card-top">
+              <div>
+                <div class="cafe-name">${cafeName}</div>
+                <div class="cafe-loc"><span class="ic">&#128205;</span>${location || 'Location not set'}</div>
               </div>
-              <div class="cafe-info-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>
-                </svg>
-                <span>${location || 'Location not set'}</span>
-              </div>
+              <span class="pill ${isOpen ? 'on' : 'off'}">
+                <span class="dot ${isOpen ? 'on' : 'off'}"></span>${isOpen ? 'Open' : 'Closed'}
+              </span>
             </div>
-            <div class="special">
-              ${hasSpecial
-                ? `<span class="special-title">Today's Special</span>${special}`
-                : '<span class="no-special">No specials today</span>'}
-            </div>
-            <div class="cafe-updated">${updated}</div>
+            <div class="hours"><span class="ic">&#128337;</span>${hours}</div>
+            ${hasSpecial
+              ? `<div class="special"><div class="special-label">Today's special</div><div class="special-text">${special}</div></div>`
+              : `<div class="no-special">No specials today</div>`}
+            <div class="updated">${updated}</div>
           </div>
         `;
       }).join('');
@@ -192,14 +241,32 @@
     }
 
     function applyFilter() {
-      document.querySelectorAll('.cafe-card').forEach(card => {
+      let shown = 0;
+      document.querySelectorAll('.card').forEach(card => {
         const status = card.dataset.status;
         const hasSpecial = card.dataset.hasSpecial === 'true';
         let show = true;
         if (currentFilter === 'open') show = status === 'open';
         else if (currentFilter === 'special') show = hasSpecial;
         card.style.display = show ? 'block' : 'none';
+        if (show) shown++;
       });
+      // Empty-state message
+      const grid = document.getElementById('cafeGrid');
+      let emptyEl = document.getElementById('emptyMsg');
+      if (shown === 0) {
+        if (!emptyEl) {
+          emptyEl = document.createElement('div');
+          emptyEl.id = 'emptyMsg';
+          emptyEl.className = 'empty';
+          grid.appendChild(emptyEl);
+        }
+        emptyEl.textContent = currentFilter === 'open'
+          ? 'No cafes are open right now.'
+          : 'No cafes have specials today.';
+      } else if (emptyEl) {
+        emptyEl.remove();
+      }
     }
 
     function filterCafes(type, ev) {
