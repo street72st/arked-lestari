@@ -406,12 +406,25 @@
       });
     }
 
-    // Listen for changes from admin panel
+    // Store last update time
+    let lastUpdate = localStorage.getItem('cafeDataUpdated') || 0;
+
+    // Listen for changes from admin panel (works across tabs)
     window.addEventListener('storage', (e) => {
       if (e.key === 'cafeData' || e.key === 'cafeDataUpdated') {
         renderCafes();
+        lastUpdate = localStorage.getItem('cafeDataUpdated') || 0;
       }
     });
+
+    // Auto-refresh every 2 seconds (works same tab too)
+    setInterval(() => {
+      const currentUpdate = localStorage.getItem('cafeDataUpdated') || 0;
+      if (currentUpdate !== lastUpdate) {
+        renderCafes();
+        lastUpdate = currentUpdate;
+      }
+    }, 2000);
 
     // Initial render
     renderCafes();
