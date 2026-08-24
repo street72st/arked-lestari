@@ -344,42 +344,10 @@
           </div>
           <button type="submit" class="login-btn" id="loginBtn">Login</button>
         </form>
-        <button class="toggle-form-btn" onclick="toggleForm()">New here? Create account</button>
         <div class="security-info">🔒 Passwords are securely encrypted and never stored in plain text.</div>
-      </div>
-
-      <div id="registerForm" style="display: none;">
-        <h2>Create Admin Account</h2>
-        <p>Register your cafe admin account</p>
-        <form onsubmit="handleRegister(event)">
-          <div class="form-group">
-            <label for="registerEmail">Email Address</label>
-            <input type="email" id="registerEmail" placeholder="your@email.com" required>
-          </div>
-          <div class="form-group">
-            <label for="registerPassword">Password (min 6 characters)</label>
-            <input type="password" id="registerPassword" placeholder="Create a strong password" minlength="6" required>
-          </div>
-          <div class="form-group">
-            <label for="registerPassword2">Confirm Password</label>
-            <input type="password" id="registerPassword2" placeholder="Confirm password" minlength="6" required>
-          </div>
-          <div class="form-group">
-            <label for="cafeName">Your Cafe Name</label>
-            <select id="cafeName" required style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;background:white;">
-              <option value="" disabled selected>Select your cafe...</option>
-              <option value="Cafe EastCoast">Cafe EastCoast</option>
-              <option value="Cafe Lanita">Cafe Lanita</option>
-              <option value="Cafe Navy Blue">Cafe Navy Blue</option>
-              <option value="Cafe Western">Cafe Western</option>
-              <option value="Cafe Ajimory">Cafe Ajimory</option>
-              <option value="Cafe PakLah">Cafe PakLah</option>
-            </select>
-          </div>
-          <button type="submit" class="login-btn" id="registerBtn">Create Account</button>
-        </form>
-        <button class="toggle-form-btn" onclick="toggleForm()">Already have account? Login</button>
-        <div class="security-info">🔒 Your password is encrypted with industry-standard security.</div>
+        <div class="security-info" style="background:#fef9c3;border-left-color:#f59e0b;color:#92400e;margin-top:10px;">
+          Accounts are issued by the site administrator. If you're a cafe owner and need access, contact the admin — you can't self-register.
+        </div>
       </div>
     </div>
   </div>
@@ -456,12 +424,6 @@
       return OFFICIAL_CAFES.find(c => c.toLowerCase() === t) || name;
     }
 
-    function toggleForm() {
-      document.getElementById('loginForm').style.display = document.getElementById('loginForm').style.display === 'none' ? 'block' : 'none';
-      document.getElementById('registerForm').style.display = document.getElementById('registerForm').style.display === 'none' ? 'block' : 'none';
-      clearMessages();
-    }
-
     function clearMessages() {
       document.getElementById('loginError').classList.remove('show');
     }
@@ -472,31 +434,16 @@
       err.classList.add('show');
     }
 
-    function handleRegister(e) {
-      e.preventDefault();
-      const email = document.getElementById('registerEmail').value;
-      const pass = document.getElementById('registerPassword').value;
-      const pass2 = document.getElementById('registerPassword2').value;
-      const cafe = document.getElementById('cafeName').value;
-
-      if (pass !== pass2) { showError('Passwords do not match'); return; }
-      if (pass.length < 6) { showError('Password must be at least 6 characters'); return; }
-
-      const btn = document.getElementById('registerBtn');
-      btn.disabled = true;
-      btn.textContent = 'Creating...';
-
-      const canonCafe = canonicalName(cafe);
-      auth.createUserWithEmailAndPassword(email, pass)
-        .then((userCred) => {
-          localStorage.setItem(`cafe_${userCred.user.uid}`, canonCafe);
-          alert('Account created! Logging in...');
-          currentUser = userCred.user;
-          currentCafe = canonCafe;
-          loginSuccess();
-        })
-        .catch((err) => { showError(err.message); })
-        .finally(() => { btn.disabled = false; btn.textContent = 'Create Account'; });
+    // Determine which cafe this logged-in account manages.
+    // Priority: the account's Firebase displayName (set by the admin when creating
+    // the account) -> a previously cached value -> a safe fallback.
+    function resolveCafeForUser(user) {
+      let name = user.displayName || localStorage.getItem(`cafe_${user.uid}`) || '';
+      name = canonicalName(name);
+      if (name && name !== 'Your Cafe') {
+        localStorage.setItem(`cafe_${user.uid}`, name);
+      }
+      return name || 'Your Cafe';
     }
 
     function handleLogin(e) {
@@ -510,8 +457,7 @@
       auth.signInWithEmailAndPassword(email, pass)
         .then((userCred) => {
           currentUser = userCred.user;
-          currentCafe = canonicalName(localStorage.getItem(`cafe_${userCred.user.uid}`) || 'Your Cafe');
-          localStorage.setItem(`cafe_${userCred.user.uid}`, currentCafe);
+          currentCafe = resolveCafeForUser(userCred.user);
           loginSuccess();
         })
         .catch((err) => { showError(err.message); })
@@ -617,8 +563,7 @@
     auth.onAuthStateChanged((user) => {
       if (user) {
         currentUser = user;
-        currentCafe = canonicalName(localStorage.getItem(`cafe_${user.uid}`) || 'Your Cafe');
-        localStorage.setItem(`cafe_${user.uid}`, currentCafe);
+        currentCafe = resolveCafeForUser(user);
         loginSuccess();
       }
     });
