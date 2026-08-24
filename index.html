@@ -3,310 +3,58 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arked Lestari - UTM</title>
+  <title>Arked Lestari Cafe Finder</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-      background: #f8f9fa;
-      color: #2c3e50;
-    }
-
-    .header {
-      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-      color: white;
-      padding: 2.5rem 1.5rem;
-      text-align: center;
-      border-bottom: 5px solid #f97316;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-
-    .header h1 {
-      font-size: 32px;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
-    }
-
-    .header p {
-      font-size: 15px;
-      opacity: 0.95;
-    }
-
-    .filter-section {
-      background: white;
-      padding: 1.5rem;
-      margin: 1.5rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .filter-btn {
-      padding: 8px 16px;
-      border: 2px solid #ddd;
-      background: white;
-      color: #666;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 14px;
-      font-weight: 600;
-      transition: all 0.3s;
-    }
-
-    .filter-btn.active {
-      background: #1f2937;
-      color: white;
-      border-color: #1f2937;
-    }
-
-    .filter-btn:hover {
-      border-color: #1f2937;
-    }
-
-    .cafe-grid {
-      display: grid;
-      gap: 1.5rem;
-      padding: 1.5rem;
-      max-width: 900px;
-      margin: 0 auto;
-    }
-
-    .cafe-card {
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      transition: transform 0.3s, box-shadow 0.3s;
-    }
-
-    .cafe-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    }
-
-    .cafe-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1.25rem;
-      border-bottom: 1px solid #f0f0f0;
-      background: #fafafa;
-    }
-
-    .cafe-name {
-      font-size: 18px;
-      font-weight: 700;
-      color: #1f2937;
-    }
-
-    .status-badge {
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .status-badge.open {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .status-badge.closed {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    .cafe-info {
-      padding: 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .cafe-info-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: #666;
-      font-size: 14px;
-    }
-
-    .cafe-info-item svg {
-      width: 20px;
-      height: 20px;
-      flex-shrink: 0;
-      color: #999;
-    }
-
-    .special {
-      padding: 1rem 1.25rem;
-      background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
-      border-top: 1px solid #fbbf24;
-      font-size: 14px;
-      color: #92400e;
-      line-height: 1.6;
-    }
-
-    .special-title {
-      display: block;
-      font-weight: 700;
-      margin-bottom: 6px;
-      color: #b45309;
-      text-transform: uppercase;
-      font-size: 12px;
-      letter-spacing: 0.5px;
-    }
-
-    .no-special {
-      display: block;
-      font-style: italic;
-      color: #b45309;
-    }
-
-    @media (max-width: 600px) {
-      .header h1 { font-size: 24px; }
-      .filter-section { margin: 1rem; padding: 1rem; }
-      .cafe-grid { padding: 1rem; }
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+    .header { background: #1f2937; color: white; padding: 30px; text-align: center; border-radius: 8px; margin-bottom: 30px; }
+    .header h1 { font-size: 32px; margin-bottom: 10px; }
+    .cafe { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; border-left: 4px solid #007bff; }
+    .cafe h2 { font-size: 22px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .status-open { background: #28a745; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; }
+    .status-closed { background: #dc3545; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; }
+    .info { margin: 10px 0; font-size: 14px; color: #666; }
+    .special { background: #fff3cd; padding: 12px; margin-top: 12px; border-radius: 4px; border-left: 4px solid #ffc107; }
+    .special-title { font-weight: bold; color: #856404; display: block; margin-bottom: 5px; }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>☕ Arked Lestari</h1>
-    <p>Cafe Directory - UTM Campus</p>
-    <p style="font-size: 12px; margin-top: 10px;">Last updated: <span id="updateTime">--</span></p>
+    <h1>☕ Arked Lestari Cafes</h1>
+    <p>Click Admin Link to Update</p>
+    <p><a href="admin.html" style="color: #ffc107; text-decoration: none;">→ Admin Panel</a></p>
   </div>
 
-  <div class="filter-section">
-    <button class="filter-btn active" onclick="filterCafes('all')">All Cafes</button>
-    <button class="filter-btn" onclick="filterCafes('open')">Open Now</button>
-    <button class="filter-btn" onclick="filterCafes('special')">Today's Special</button>
-  </div>
-
-  <div class="cafe-grid" id="cafeGrid"></div>
+  <div id="cafes"></div>
 
   <script>
-    // List of all cafes (5 cafes - Lestari only)
-    const allCafes = [
-      'Cafe EastCoast',
-      'Cafe Lanita',
-      'Cafe Navy Blue',
-      'Cafe Western',
-      'Cafe Ajimory'
-    ];
+    const CAFES = ['Cafe EastCoast', 'Cafe Lanita', 'Cafe Navy Blue', 'Cafe Western', 'Cafe Ajimory'];
 
-    // Get or initialize cafe data
-    function getCafeData() {
-      return JSON.parse(localStorage.getItem('cafeData')) || {};
-    }
+    function render() {
+      const data = JSON.parse(localStorage.getItem('cafeData') || '{}');
+      let html = '';
 
-    // Render all cafes
-    function renderCafes() {
-      const cafeData = getCafeData();
-      const grid = document.getElementById('cafeGrid');
+      CAFES.forEach(cafe => {
+        const info = data[cafe] || { status: 'open', hours: '7:00 AM - 10:00 PM', location: '', special: '' };
+        const statusClass = info.status === 'open' ? 'status-open' : 'status-closed';
+        const statusText = info.status === 'open' ? 'OPEN' : 'CLOSED';
 
-      grid.innerHTML = allCafes.map(cafeName => {
-        const data = cafeData[cafeName] || {
-          status: 'open',
-          hours: '7:00 AM - 10:00 PM',
-          location: '',
-          special: ''
-        };
-
-        const statusClass = data.status === 'open' ? 'open' : 'closed';
-        const statusText = data.status === 'open' ? 'Open' : 'Closed';
-        const hasSpecial = data.special && data.special.trim().length > 0;
-
-        return `
-          <div class="cafe-card" data-cafe="${cafeName}" data-status="${data.status}" data-has-special="${hasSpecial}">
-            <div class="cafe-header">
-              <div class="cafe-name">${cafeName}</div>
-              <span class="status-badge ${statusClass}">${statusText}</span>
-            </div>
-            <div class="cafe-info">
-              <div class="cafe-info-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <polyline points="12 6 12 12 16 14"></polyline>
-                </svg>
-                <span>${data.hours}</span>
-              </div>
-              <div class="cafe-info-item">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                  <circle cx="12" cy="10" r="3"></circle>
-                </svg>
-                <span>${data.location || 'Location TBA'}</span>
-              </div>
-            </div>
-            <div class="special">
-              ${hasSpecial 
-                ? `<span class="special-title">Today's Special</span>${data.special}` 
-                : '<span class="no-special">No specials today</span>'
-              }
-            </div>
+        html += `
+          <div class="cafe">
+            <h2>${cafe} <span class="${statusClass}">${statusText}</span></h2>
+            <div class="info">⏰ ${info.hours}</div>
+            <div class="info">📍 ${info.location || '(not set)'}</div>
+            ${info.special ? `<div class="special"><span class="special-title">TODAY'S SPECIAL:</span>${info.special}</div>` : ''}
           </div>
         `;
-      }).join('');
-
-      // Update timestamp
-      document.getElementById('updateTime').textContent = new Date().toLocaleTimeString();
-    }
-
-    // Filter cafes
-    function filterCafes(type) {
-      const cards = document.querySelectorAll('.cafe-card');
-      const buttons = document.querySelectorAll('.filter-btn');
-
-      buttons.forEach(btn => btn.classList.remove('active'));
-      event.target.classList.add('active');
-
-      cards.forEach(card => {
-        let show = false;
-        const status = card.dataset.status;
-        const hasSpecial = card.dataset.hasSpecial === 'true';
-
-        if (type === 'all') {
-          show = true;
-        } else if (type === 'open') {
-          show = status === 'open';
-        } else if (type === 'special') {
-          show = hasSpecial;
-        }
-
-        card.style.display = show ? 'block' : 'none';
       });
+
+      document.getElementById('cafes').innerHTML = html;
     }
 
-    // REAL-TIME UPDATE CHECK
-    let lastCheck = 0;
-    
-    function checkForUpdates() {
-      const current = JSON.stringify(getCafeData());
-      
-      if (current !== lastCheck) {
-        lastCheck = current;
-        renderCafes();
-      }
-    }
-
-    // Check every 500ms (much faster - guarantees update within 0.5 seconds)
-    setInterval(checkForUpdates, 500);
-
-    // Also check on storage changes (cross-tab updates)
-    window.addEventListener('storage', () => {
-      renderCafes();
-    });
-
-    // Initial render
-    renderCafes();
+    // Update every 500ms
+    setInterval(render, 500);
+    render();
   </script>
 </body>
 </html>
