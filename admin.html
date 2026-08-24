@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arked Lestari - Cafe Admin Dashboard (Secure)</title>
+  <title>Arked Lestari - Cafe Admin Dashboard</title>
   <style>
     * {
       margin: 0;
@@ -89,7 +89,7 @@
       transition: all 0.3s;
     }
 
-    .login-btn:hover {
+    .login-btn:hover:not(:disabled) {
       background: #111827;
       transform: translateY(-2px);
       box-shadow: 0 8px 20px rgba(31, 41, 55, 0.3);
@@ -108,23 +108,10 @@
       margin-bottom: 1rem;
       font-size: 14px;
       display: none;
+      border-left: 4px solid #dc2626;
     }
 
     .error.show {
-      display: block;
-    }
-
-    .success {
-      background: #dcfce7;
-      color: #166534;
-      padding: 12px;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      font-size: 14px;
-      display: none;
-    }
-
-    .success.show {
       display: block;
     }
 
@@ -143,26 +130,29 @@
       color: #0c4a6e;
     }
 
-    /* Loading state */
-    .loading {
-      position: relative;
-      overflow: hidden;
+    .security-info {
+      background: #e0f2fe;
+      border-left: 4px solid #0284c7;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #0c4a6e;
+      margin-top: 1rem;
     }
 
-    .loading::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-      animation: shimmer 1.5s infinite;
+    .loading-info {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      padding: 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #92400e;
+      margin-top: 1rem;
+      display: none;
     }
 
-    @keyframes shimmer {
-      0% { left: -100%; }
-      100% { left: 100%; }
+    .loading-info.show {
+      display: block;
     }
 
     /* Dashboard styles */
@@ -344,16 +334,6 @@
       display: block;
     }
 
-    .security-info {
-      background: #e0f2fe;
-      border-left: 4px solid #0284c7;
-      padding: 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      color: #0c4a6e;
-      margin-top: 1rem;
-    }
-
     @media (max-width: 600px) {
       .login-box {
         padding: 1.5rem;
@@ -378,7 +358,7 @@
   <div class="login-container" id="loginContainer">
     <div class="login-box">
       <div class="error" id="loginError"></div>
-      <div class="success" id="loginSuccess"></div>
+      <div class="loading-info" id="loadingInfo">⏳ Loading Firebase... Please wait.</div>
 
       <!-- Login Form -->
       <div id="loginForm">
@@ -496,13 +476,19 @@
     </div>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage.js"></script>
+  <!-- Firebase SDK with proper initialization -->
+  <script type="module">
+    // Import Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword, 
+      signOut, 
+      onAuthStateChanged 
+    } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
 
-  <script>
-    // ===== FIREBASE CONFIG (CONFIGURED FOR YOUR PROJECT) =====
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBYMXrWKpAh1deuuhUdUM8t31zJnMjAFrY",
       authDomain: "makan-utm.firebaseapp.com",
@@ -511,80 +497,66 @@
       messagingSenderId: "243510334532",
       appId: "1:243510334532:web:c829ba0da63ebad3ea1811"
     };
-    // =========================================================
 
     // Initialize Firebase
-    let auth, storage;
+    let app, auth;
     try {
-      firebase.initializeApp(firebaseConfig);
-      auth = firebase.auth();
-      storage = firebase.storage();
+      app = initializeApp(firebaseConfig);
+      auth = getAuth(app);
+      console.log("✅ Firebase initialized successfully!");
+      document.getElementById('loadingInfo').classList.remove('show');
     } catch (error) {
-      console.error("Firebase init error:", error);
+      console.error("❌ Firebase initialization error:", error);
+      showError("Failed to initialize Firebase. Please refresh the page.");
     }
 
-    // ========== KEY DIFFERENCE FROM OLD VERSION ==========
-    // NO HARDCODED PASSWORDS!
-    // Authentication is handled by Firebase (server-side)
-    // User login sends credentials to Firebase servers (secure)
-    // Firebase returns auth token (safe to use)
-    // ======================================================
+    // Make auth globally available
+    window.auth = auth;
+    window.createUserWithEmailAndPassword = createUserWithEmailAndPassword;
+    window.signInWithEmailAndPassword = signInWithEmailAndPassword;
+    window.signOut = signOut;
+    window.onAuthStateChanged = onAuthStateChanged;
+    window.firebaseReady = true;
 
+    // ========== STATE VARIABLES ==========
     let currentUser = null;
     let currentCafe = null;
-
-    // Track inactivity for security
     let inactivityTimeout;
     const INACTIVITY_TIME = 30 * 60 * 1000; // 30 minutes
 
-    function resetInactivityTimer() {
-      clearTimeout(inactivityTimeout);
-      inactivityTimeout = setTimeout(() => {
-        if (currentUser) {
-          logout(); // Auto-logout after 30 min of no activity
-          alert('Session expired for security. Please login again.');
-        }
-      }, INACTIVITY_TIME);
-    }
-
-    document.addEventListener('mousemove', resetInactivityTimer);
-    document.addEventListener('keypress', resetInactivityTimer);
-
-    function toggleForm() {
+    // ========== UI FUNCTIONS ==========
+    window.toggleForm = function() {
       const loginForm = document.getElementById('loginForm');
       const registerForm = document.getElementById('registerForm');
       loginForm.style.display = loginForm.style.display === 'none' ? 'block' : 'none';
       registerForm.style.display = registerForm.style.display === 'none' ? 'block' : 'none';
       clearMessages();
-    }
+    };
 
     function clearMessages() {
       document.getElementById('loginError').classList.remove('show');
-      document.getElementById('loginSuccess').classList.remove('show');
     }
 
     function showError(message) {
       const errorDiv = document.getElementById('loginError');
-      errorDiv.textContent = message;
+      errorDiv.textContent = '❌ ' + message;
       errorDiv.classList.add('show');
     }
 
-    function showSuccess(message) {
-      const successDiv = document.getElementById('loginSuccess');
-      successDiv.textContent = message;
-      successDiv.classList.add('show');
-    }
-
-    // SECURITY: Register new cafe owner
-    async function handleRegister(e) {
+    // ========== AUTH FUNCTIONS ==========
+    window.handleRegister = async function(e) {
       e.preventDefault();
+
+      if (!window.firebaseReady) {
+        showError('Firebase is still loading. Please wait...');
+        return;
+      }
 
       const email = document.getElementById('registerEmail').value;
       const password = document.getElementById('registerPassword').value;
       const password2 = document.getElementById('registerPassword2').value;
       const cafeName = document.getElementById('cafeName').value;
 
-      // Validation
       if (password !== password2) {
         showError('Passwords do not match');
         return;
@@ -600,30 +572,30 @@
       registerBtn.textContent = 'Creating account...';
 
       try {
-        // ✅ SECURE: Firebase creates user with encrypted password
-        // Password is NEVER sent to your code or stored locally
-        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const userCredential = await window.createUserWithEmailAndPassword(auth, email, password);
+        localStorage.setItem(`cafe_${userCredential.user.uid}`, cafeName);
 
-        // Save cafe info to database
-        await saveCafeNameToDatabase(userCredential.user.uid, cafeName);
-
-        showSuccess('Account created! Logging you in...');
-        setTimeout(() => {
-          currentUser = userCredential.user;
-          currentCafe = cafeName;
-          loginSuccess();
-        }, 1500);
+        showError(''); // Clear error
+        alert('Account created! Logging you in...');
+        
+        currentUser = userCredential.user;
+        currentCafe = cafeName;
+        loginSuccess();
       } catch (error) {
         showError(`Registration failed: ${error.message}`);
       } finally {
         registerBtn.disabled = false;
         registerBtn.textContent = 'Create Account';
       }
-    }
+    };
 
-    // SECURITY: Login with email + password
-    async function handleLogin(e) {
+    window.handleLogin = async function(e) {
       e.preventDefault();
+
+      if (!window.firebaseReady) {
+        showError('Firebase is still loading. Please wait...');
+        return;
+      }
 
       const email = document.getElementById('loginEmail').value;
       const password = document.getElementById('loginPassword').value;
@@ -633,13 +605,9 @@
       loginBtn.textContent = 'Logging in...';
 
       try {
-        // ✅ SECURE: Firebase verifies password server-side
-        // Your JavaScript NEVER sees the password hash
-        // Only gets a secure token back
-        const userCredential = await auth.signInWithEmailAndPassword(email, password);
-
+        const userCredential = await window.signInWithEmailAndPassword(auth, email, password);
         currentUser = userCredential.user;
-        const cafeName = await getCafeNameFromDatabase(currentUser.uid);
+        const cafeName = localStorage.getItem(`cafe_${currentUser.uid}`) || 'Your Cafe';
         currentCafe = cafeName;
 
         loginSuccess();
@@ -649,16 +617,7 @@
         loginBtn.disabled = false;
         loginBtn.textContent = 'Login';
       }
-    }
-
-    // Placeholder functions - in real app, use Firebase Firestore
-    async function saveCafeNameToDatabase(userId, cafeName) {
-      localStorage.setItem(`cafe_${userId}`, cafeName);
-    }
-
-    async function getCafeNameFromDatabase(userId) {
-      return localStorage.getItem(`cafe_${userId}`) || 'Your Cafe';
-    }
+    };
 
     function loginSuccess() {
       clearMessages();
@@ -669,14 +628,33 @@
       resetInactivityTimer();
     }
 
-    function setStatus(status) {
+    window.logout = async function() {
+      if (confirm('Are you sure you want to logout?')) {
+        try {
+          await window.signOut(auth);
+          currentUser = null;
+          currentCafe = null;
+          document.getElementById('loginContainer').style.display = 'flex';
+          document.getElementById('dashboard').classList.remove('active');
+          document.getElementById('loginEmail').value = '';
+          document.getElementById('loginPassword').value = '';
+          clearMessages();
+          clearTimeout(inactivityTimeout);
+        } catch (error) {
+          console.error('Logout error:', error);
+        }
+      }
+    };
+
+    // ========== CAFE DATA FUNCTIONS ==========
+    window.setStatus = function(status) {
       document.getElementById('openBtn').className = 'status-btn ' + (status === 'open' ? 'open' : 'inactive');
       document.getElementById('closedBtn').className = 'status-btn ' + (status === 'closed' ? 'closed' : 'inactive');
 
       const data = getCafeDataFromForm();
       data.status = status;
       saveCafeDataInternal(data);
-    }
+    };
 
     function getCafeDataFromForm() {
       return {
@@ -688,14 +666,14 @@
       };
     }
 
-    function saveCafeData() {
+    window.saveCafeData = function() {
       const data = getCafeDataFromForm();
       saveCafeDataInternal(data);
 
       const msg = document.getElementById('successMsg');
       msg.classList.add('show');
       setTimeout(() => msg.classList.remove('show'), 3000);
-    }
+    };
 
     function saveCafeDataInternal(data) {
       const allCafes = JSON.parse(localStorage.getItem('cafeData')) || {};
@@ -709,7 +687,7 @@
       window.localStorage.setItem('cafeDataUpdated', Date.now());
     }
 
-    function loadCafeData() {
+    window.loadCafeData = function() {
       const allCafes = JSON.parse(localStorage.getItem('cafeData')) || {};
       const cafeData = allCafes[currentCafe] || {};
 
@@ -725,31 +703,29 @@
         document.getElementById('openBtn').className = 'status-btn inactive';
         document.getElementById('closedBtn').className = 'status-btn closed';
       }
+    };
+
+    // ========== SESSION MANAGEMENT ==========
+    function resetInactivityTimer() {
+      clearTimeout(inactivityTimeout);
+      inactivityTimeout = setTimeout(() => {
+        if (currentUser) {
+          window.logout();
+          alert('Session expired for security. Please login again.');
+        }
+      }, INACTIVITY_TIME);
     }
 
-    function logout() {
-      if (confirm('Are you sure you want to logout?')) {
-        auth.signOut().then(() => {
-          currentUser = null;
-          currentCafe = null;
-          document.getElementById('loginContainer').style.display = 'flex';
-          document.getElementById('dashboard').classList.remove('active');
-          document.getElementById('loginEmail').value = '';
-          document.getElementById('loginPassword').value = '';
-          clearMessages();
-          clearTimeout(inactivityTimeout);
-        });
-      }
-    }
+    document.addEventListener('mousemove', resetInactivityTimer);
+    document.addEventListener('keypress', resetInactivityTimer);
 
-    // Check if user already logged in
-    auth.onAuthStateChanged((user) => {
+    // ========== AUTH STATE LISTENER ==========
+    onAuthStateChanged(auth, (user) => {
       if (user) {
         currentUser = user;
-        getCafeNameFromDatabase(user.uid).then(cafeName => {
-          currentCafe = cafeName;
-          loginSuccess();
-        });
+        const cafeName = localStorage.getItem(`cafe_${user.uid}`) || 'Your Cafe';
+        currentCafe = cafeName;
+        loginSuccess();
       }
     });
   </script>
