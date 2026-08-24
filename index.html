@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Arked Lestari - UTM</title>
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>☕</text></svg>">
   <style>
     * {
       margin: 0;
@@ -25,330 +24,206 @@
       text-align: center;
       border-bottom: 5px solid #f97316;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      position: relative;
     }
 
     .header h1 {
       font-size: 32px;
       font-weight: 700;
       margin-bottom: 0.5rem;
-      letter-spacing: -0.5px;
     }
 
     .header p {
       font-size: 15px;
       opacity: 0.95;
-      font-weight: 300;
     }
 
-    .utm-badge {
-      display: inline-block;
-      background: rgba(255, 255, 255, 0.2);
-      padding: 6px 14px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      margin-top: 1rem;
-    }
-
-    .admin-link {
-      position: absolute;
-      top: 1rem;
-      right: 1.5rem;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      padding: 8px 14px;
-      border-radius: 6px;
-      text-decoration: none;
-      font-size: 12px;
-      font-weight: 600;
-      transition: all 0.3s;
-      border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-
-    .admin-link:hover {
-      background: rgba(255, 255, 255, 0.3);
-      border-color: white;
-    }
-
-    .container {
-      max-width: 700px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem;
-    }
-
-    .filter-bar {
+    .filter-section {
+      background: white;
+      padding: 1.5rem;
+      margin: 1.5rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
       display: flex;
       gap: 10px;
-      margin-bottom: 2rem;
       flex-wrap: wrap;
-      justify-content: center;
     }
 
     .filter-btn {
-      padding: 10px 20px;
-      border: 1.5px solid #ddd;
+      padding: 8px 16px;
+      border: 2px solid #ddd;
       background: white;
-      border-radius: 25px;
+      color: #666;
+      border-radius: 6px;
       cursor: pointer;
       font-size: 14px;
-      font-weight: 500;
-      transition: all 0.3s ease;
-      color: #555;
-    }
-
-    .filter-btn:hover {
-      border-color: #1f2937;
-      color: #1f2937;
-      transform: translateY(-2px);
+      font-weight: 600;
+      transition: all 0.3s;
     }
 
     .filter-btn.active {
       background: #1f2937;
       color: white;
       border-color: #1f2937;
-      box-shadow: 0 4px 12px rgba(31, 41, 55, 0.3);
+    }
+
+    .filter-btn:hover {
+      border-color: #1f2937;
     }
 
     .cafe-grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.25rem;
-      margin-bottom: 2rem;
+      gap: 1.5rem;
+      padding: 1.5rem;
+      max-width: 900px;
+      margin: 0 auto;
     }
 
     .cafe-card {
       background: white;
-      border: 1px solid #e8e8e8;
-      border-radius: 12px;
-      padding: 1.5rem;
+      border-radius: 10px;
       overflow: hidden;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      transition: transform 0.3s, box-shadow 0.3s;
     }
 
     .cafe-card:hover {
-      border-color: #1f2937;
-      box-shadow: 0 8px 20px rgba(31, 41, 55, 0.15);
       transform: translateY(-4px);
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
     }
 
     .cafe-header {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 14px;
-      gap: 12px;
+      align-items: center;
+      padding: 1.25rem;
+      border-bottom: 1px solid #f0f0f0;
+      background: #fafafa;
     }
 
     .cafe-name {
-      font-size: 17px;
+      font-size: 18px;
       font-weight: 700;
       color: #1f2937;
-      flex: 1;
     }
 
     .status-badge {
-      display: inline-block;
       padding: 6px 14px;
       border-radius: 20px;
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
-      white-space: nowrap;
-      flex-shrink: 0;
     }
 
-    .status-open {
+    .status-badge.open {
       background: #dcfce7;
       color: #166534;
     }
 
-    .status-closed {
+    .status-badge.closed {
       background: #fee2e2;
       color: #991b1b;
     }
 
     .cafe-info {
+      padding: 1.25rem;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-      margin-bottom: 12px;
-      font-size: 14px;
-      color: #666;
+      gap: 10px;
     }
 
     .cafe-info-item {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
+      color: #666;
+      font-size: 14px;
     }
 
     .cafe-info-item svg {
-      width: 18px;
-      height: 18px;
+      width: 20px;
+      height: 20px;
       flex-shrink: 0;
-      color: #1f2937;
+      color: #999;
     }
 
     .special {
-      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-      border-left: 4px solid #f97316;
-      padding: 12px 14px;
-      border-radius: 6px;
-      margin-top: 12px;
-      font-size: 13px;
-      color: #78350f;
-      line-height: 1.5;
+      padding: 1rem 1.25rem;
+      background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+      border-top: 1px solid #fbbf24;
+      font-size: 14px;
+      color: #92400e;
+      line-height: 1.6;
     }
 
     .special-title {
       display: block;
       font-weight: 700;
-      color: #92400e;
-      margin-bottom: 4px;
-      font-size: 12px;
+      margin-bottom: 6px;
+      color: #b45309;
       text-transform: uppercase;
+      font-size: 12px;
       letter-spacing: 0.5px;
     }
 
     .no-special {
-      color: #aaa;
+      display: block;
       font-style: italic;
-      font-size: 13px;
-    }
-
-    .footer {
-      text-align: center;
-      padding: 2rem 1.5rem;
-      color: #999;
-      font-size: 13px;
-    }
-
-    .footer a {
-      color: #1f2937;
-      text-decoration: none;
-      font-weight: 600;
-    }
-
-    .footer a:hover {
-      text-decoration: underline;
+      color: #b45309;
     }
 
     @media (max-width: 600px) {
-      .header h1 {
-        font-size: 26px;
-      }
-
-      .cafe-card {
-        padding: 1.25rem;
-      }
-
-      .cafe-header {
-        flex-direction: column;
-      }
-
-      .status-badge {
-        align-self: flex-start;
-      }
-
-      .admin-link {
-        position: static;
-        margin-bottom: 1rem;
-        display: inline-block;
-      }
+      .header h1 { font-size: 24px; }
+      .filter-section { margin: 1rem; padding: 1rem; }
+      .cafe-grid { padding: 1rem; }
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <a href="admin.html" class="admin-link">🔧 Cafe Admin</a>
     <h1>☕ Arked Lestari</h1>
-    <p>Cafe directory for Arked Lestari residents</p>
-    <div class="utm-badge">Universiti Teknologi Malaysia</div>
+    <p>Cafe Directory - UTM Campus</p>
+    <p style="font-size: 12px; margin-top: 10px;">Last updated: <span id="updateTime">--</span></p>
   </div>
 
-  <div class="container">
-    <div class="filter-bar">
-      <button class="filter-btn active" onclick="filterCafes('all')">All cafes</button>
-      <button class="filter-btn" onclick="filterCafes('open')">Open now</button>
-      <button class="filter-btn" onclick="filterCafes('special')">Has specials</button>
-    </div>
-
-    <div class="cafe-grid" id="cafeGrid">
-      <!-- Cafes will be loaded here by JavaScript -->
-    </div>
+  <div class="filter-section">
+    <button class="filter-btn active" onclick="filterCafes('all')">All Cafes</button>
+    <button class="filter-btn" onclick="filterCafes('open')">Open Now</button>
+    <button class="filter-btn" onclick="filterCafes('special')">Today's Special</button>
   </div>
 
-  <div class="footer">
-    <p>Last updated: <span id="updateTime">Today</span></p>
-    <p>Made for Arked Lestari residents • <a href="admin.html">Cafe owners login here</a></p>
-  </div>
+  <div class="cafe-grid" id="cafeGrid"></div>
 
   <script>
-    // Default cafe data
-    const DEFAULT_CAFES = {
-      'Cafe Lestari': {
-        location: 'Lestari Residence',
-        hours: '7:00 AM - 10:00 PM',
-        status: 'open',
-        special: 'Buy 1 drink, get free pastry with student card'
-      },
-      'Cafe EastCoast': {
-        location: 'East Coast Block',
-        hours: '8:00 AM - 9:00 PM',
-        status: 'open',
-        special: 'Nasi Lemak Combo - RM 6.50 (usually RM 8)'
-      },
-      'Cafe Lanita': {
-        location: 'Lanita Residence',
-        hours: '7:30 AM - 7:00 PM',
-        status: 'open',
-        special: null
-      },
-      'Cafe Navy Blue': {
-        location: 'Navy Blue Residence',
-        hours: '8:00 AM - 8:30 PM',
-        status: 'open',
-        special: 'Free milo upgrade to large with any food order'
-      },
-      'Cafe Western': {
-        location: 'Western Block',
-        hours: '10:00 AM - 6:00 PM',
-        status: 'closed',
-        special: null
-      },
-      'Cafe Ajimory': {
-        location: 'Ajimory Residence',
-        hours: '7:00 AM - 9:30 PM',
-        status: 'open',
-        special: 'Roti Canai + Curry (2 pieces) - RM 5 with ID verification'
-      }
-    };
+    // List of all cafes (5 cafes - Lestari only)
+    const allCafes = [
+      'Cafe EastCoast',
+      'Cafe Lanita',
+      'Cafe Navy Blue',
+      'Cafe Western',
+      'Cafe Ajimory'
+    ];
 
+    // Get or initialize cafe data
     function getCafeData() {
-      const savedData = JSON.parse(localStorage.getItem('cafeData')) || {};
-      
-      // Merge saved data with defaults
-      const merged = {};
-      Object.keys(DEFAULT_CAFES).forEach(cafeName => {
-        merged[cafeName] = {
-          ...DEFAULT_CAFES[cafeName],
-          ...savedData[cafeName]
-        };
-      });
-      
-      return merged;
+      return JSON.parse(localStorage.getItem('cafeData')) || {};
     }
 
+    // Render all cafes
     function renderCafes() {
-      const cafeGrid = document.getElementById('cafeGrid');
       const cafeData = getCafeData();
-      
-      cafeGrid.innerHTML = Object.entries(cafeData).map(([cafeName, data]) => {
-        const hasSpecial = data.special && data.special.trim() !== '';
-        const statusClass = data.status === 'open' ? 'status-open' : 'status-closed';
+      const grid = document.getElementById('cafeGrid');
+
+      grid.innerHTML = allCafes.map(cafeName => {
+        const data = cafeData[cafeName] || {
+          status: 'open',
+          hours: '7:00 AM - 10:00 PM',
+          location: '',
+          special: ''
+        };
+
+        const statusClass = data.status === 'open' ? 'open' : 'closed';
         const statusText = data.status === 'open' ? 'Open' : 'Closed';
-        
+        const hasSpecial = data.special && data.special.trim().length > 0;
+
         return `
           <div class="cafe-card" data-cafe="${cafeName}" data-status="${data.status}" data-has-special="${hasSpecial}">
             <div class="cafe-header">
@@ -368,7 +243,7 @@
                   <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                   <circle cx="12" cy="10" r="3"></circle>
                 </svg>
-                <span>${data.location}</span>
+                <span>${data.location || 'Location TBA'}</span>
               </div>
             </div>
             <div class="special">
@@ -380,8 +255,12 @@
           </div>
         `;
       }).join('');
+
+      // Update timestamp
+      document.getElementById('updateTime').textContent = new Date().toLocaleTimeString();
     }
 
+    // Filter cafes
     function filterCafes(type) {
       const cards = document.querySelectorAll('.cafe-card');
       const buttons = document.querySelectorAll('.filter-btn');
@@ -406,35 +285,28 @@
       });
     }
 
-    // Store last update time
-    let lastUpdate = localStorage.getItem('cafeDataUpdated') || 0;
-
-    // Listen for changes from admin panel (works across tabs)
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'cafeData' || e.key === 'cafeDataUpdated') {
+    // REAL-TIME UPDATE CHECK
+    let lastCheck = 0;
+    
+    function checkForUpdates() {
+      const current = JSON.stringify(getCafeData());
+      
+      if (current !== lastCheck) {
+        lastCheck = current;
         renderCafes();
-        lastUpdate = localStorage.getItem('cafeDataUpdated') || 0;
       }
+    }
+
+    // Check every 500ms (much faster - guarantees update within 0.5 seconds)
+    setInterval(checkForUpdates, 500);
+
+    // Also check on storage changes (cross-tab updates)
+    window.addEventListener('storage', () => {
+      renderCafes();
     });
-
-    // Auto-refresh every 2 seconds (works same tab too)
-    setInterval(() => {
-      const currentUpdate = localStorage.getItem('cafeDataUpdated') || 0;
-      if (currentUpdate !== lastUpdate) {
-        renderCafes();
-        lastUpdate = currentUpdate;
-      }
-    }, 2000);
 
     // Initial render
     renderCafes();
-
-    // Update timestamp
-    document.getElementById('updateTime').textContent = new Date().toLocaleDateString('en-US', {
-      weekday: 'long',
-      month: 'short',
-      day: 'numeric'
-    });
   </script>
 </body>
 </html>
