@@ -456,6 +456,13 @@
     //   document ID = the owner's email (lowercase)
     //   field "cafe" = the exact cafe name, e.g. "Cafe Lanita"
     // Returns the canonical cafe name, or null if this email isn't mapped.
+    // Central place that sets the active cafe and updates the header immediately.
+    function applyCafe(cafe) {
+      currentCafe = cafe;
+      const el = document.getElementById('adminCafeName');
+      if (el) el.textContent = cafe;
+    }
+
     function resolveCafeForUser(user) {
       const emailKey = (user.email || '').toLowerCase().trim();
       return db.collection('owners').doc(emailKey).get()
@@ -483,12 +490,11 @@
         })
         .then((cafe) => {
           if (!cafe) {
-            // Logged in, but no cafe assigned to this email yet.
             showError('This account is not linked to a cafe yet. Contact the site admin.');
             auth.signOut();
             return;
           }
-          currentCafe = cafe;
+          applyCafe(cafe);
           loginSuccess();
         })
         .catch((err) => { showError(err.message); })
@@ -633,11 +639,10 @@
         currentUser = user;
         resolveCafeForUser(user).then((cafe) => {
           if (!cafe) {
-            // Session exists but email isn't mapped to a cafe - sign out cleanly.
             auth.signOut();
             return;
           }
-          currentCafe = cafe;
+          applyCafe(cafe);
           loginSuccess();
         });
       }
