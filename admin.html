@@ -443,6 +443,16 @@
     let inactivityTimeout;
     const INACTIVITY_TIME = 30 * 60 * 1000;
 
+    // The 5 official cafe names the main site displays.
+    const OFFICIAL_CAFES = ['Cafe EastCoast', 'Cafe Lanita', 'Cafe Navy Blue', 'Cafe Western', 'Cafe Ajimory'];
+
+    // Map any typed/stored name (wrong case, extra spaces) to the ONE official name.
+    // This guarantees the admin reads and writes the exact same key the main site reads.
+    function canonicalName(name) {
+      const t = (name || '').toLowerCase().replace(/\s+/g, ' ').trim();
+      return OFFICIAL_CAFES.find(c => c.toLowerCase() === t) || name;
+    }
+
     function toggleForm() {
       document.getElementById('loginForm').style.display = document.getElementById('loginForm').style.display === 'none' ? 'block' : 'none';
       document.getElementById('registerForm').style.display = document.getElementById('registerForm').style.display === 'none' ? 'block' : 'none';
@@ -473,12 +483,13 @@
       btn.disabled = true;
       btn.textContent = 'Creating...';
 
+      const canonCafe = canonicalName(cafe);
       auth.createUserWithEmailAndPassword(email, pass)
         .then((userCred) => {
-          localStorage.setItem(`cafe_${userCred.user.uid}`, cafe);
+          localStorage.setItem(`cafe_${userCred.user.uid}`, canonCafe);
           alert('Account created! Logging in...');
           currentUser = userCred.user;
-          currentCafe = cafe;
+          currentCafe = canonCafe;
           loginSuccess();
         })
         .catch((err) => { showError(err.message); })
@@ -496,7 +507,8 @@
       auth.signInWithEmailAndPassword(email, pass)
         .then((userCred) => {
           currentUser = userCred.user;
-          currentCafe = localStorage.getItem(`cafe_${userCred.user.uid}`) || 'Your Cafe';
+          currentCafe = canonicalName(localStorage.getItem(`cafe_${userCred.user.uid}`) || 'Your Cafe');
+          localStorage.setItem(`cafe_${userCred.user.uid}`, currentCafe);
           loginSuccess();
         })
         .catch((err) => { showError(err.message); })
@@ -553,14 +565,23 @@
 
     function saveCafeDataLocal(data) {
       const all = JSON.parse(localStorage.getItem('cafeData')) || {};
-      all[currentCafe] = { status: data.status, hours: data.hours, location: data.location, special: data.special };
+      const canon = canonicalName(currentCafe);
+      // Remove any stale duplicate keys for this cafe (e.g. "Cafe Eastcoast" vs "Cafe EastCoast")
+      Object.keys(all).forEach(k => {
+        const norm = k.toLowerCase().replace(/\s+/g, ' ').trim();
+        if (k !== canon && norm === canon.toLowerCase()) {
+          delete all[k];
+        }
+      });
+      all[canon] = { status: data.status, hours: data.hours, location: data.location, special: data.special };
       localStorage.setItem('cafeData', JSON.stringify(all));
       localStorage.setItem('cafeDataUpdated', Date.now());
     }
 
     function loadCafeData() {
       const all = JSON.parse(localStorage.getItem('cafeData')) || {};
-      const data = all[currentCafe] || {};
+      const canon = canonicalName(currentCafe);
+      const data = all[canon] || all[currentCafe] || {};
       document.getElementById('hours').value = data.hours || '7:00 AM - 10:00 PM';
       document.getElementById('location').value = data.location || '';
       document.getElementById('special').value = data.special || '';
@@ -590,7 +611,8 @@
     auth.onAuthStateChanged((user) => {
       if (user) {
         currentUser = user;
-        currentCafe = localStorage.getItem(`cafe_${user.uid}`) || 'Your Cafe';
+        currentCafe = canonicalName(localStorage.getItem(`cafe_${user.uid}`) || 'Your Cafe');
+        localStorage.setItem(`cafe_${user.uid}`, currentCafe);
         loginSuccess();
       }
     });
