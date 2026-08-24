@@ -62,6 +62,10 @@
       text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;
     }
     .no-special { display: block; font-style: italic; color: #b45309; }
+    .cafe-updated {
+      padding: 8px 1.25rem; font-size: 11px; color: #9ca3af; text-align: right;
+      background: #fafafa; border-top: 1px solid #f0f0f0; letter-spacing: 0.2px;
+    }
     .loading { text-align: center; padding: 3rem; color: #999; font-size: 15px; }
 
     @media (max-width: 600px) {
@@ -108,7 +112,7 @@
     const db = firebase.firestore();
 
     // The 5 official cafes the site always shows (even before any owner has saved data)
-    const CAFES = ['Cafe EastCoast', 'Cafe Lanita', 'Cafe Navy Blue', 'Cafe Western', 'Cafe Ajimory'];
+    const CAFES = ['Cafe EastCoast', 'Cafe Lanita', 'Cafe Navy Blue', 'Cafe Western', 'Cafe Ajimory', 'Cafe PakLah'];
 
     // Holds the latest data from Firestore, keyed by cafe name
     let liveData = {};
@@ -129,6 +133,18 @@
         '\u26a0 Could not load live data. Check your connection.';
     });
 
+    // Turn a Firestore timestamp into a friendly "Updated: 24 Aug 2026, 11:45 AM"
+    // Handles the case where a cafe has never been updated yet.
+    function formatUpdated(ts) {
+      if (!ts || typeof ts.toDate !== 'function') {
+        return 'Not updated yet';
+      }
+      const d = ts.toDate();
+      const date = d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
+      return 'Updated: ' + date + ', ' + time;
+    }
+
     function render() {
       const grid = document.getElementById('cafeGrid');
       grid.innerHTML = CAFES.map(cafeName => {
@@ -141,6 +157,7 @@
         const hasSpecial = special.trim().length > 0;
         const statusClass = status === 'open' ? 'open' : 'closed';
         const statusText  = status === 'open' ? 'Open' : 'Closed';
+        const updated = formatUpdated(data.updatedAt);
 
         return `
           <div class="cafe-card" data-status="${status}" data-has-special="${hasSpecial}">
@@ -167,6 +184,7 @@
                 ? `<span class="special-title">Today's Special</span>${special}`
                 : '<span class="no-special">No specials today</span>'}
             </div>
+            <div class="cafe-updated">${updated}</div>
           </div>
         `;
       }).join('');
