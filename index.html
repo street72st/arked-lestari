@@ -32,8 +32,36 @@
     @keyframes breathe { 0%,100%{opacity:1; transform:scale(1);} 50%{opacity:.55; transform:scale(.82);} }
     @keyframes ring { 0%{transform:scale(1); opacity:.6;} 100%{transform:scale(2.6); opacity:0;} }
     @keyframes fadeup { from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:translateY(0);} }
+    @keyframes flipBounce {
+      0%   { transform: scale(1) rotate(0deg); }
+      30%  { transform: scale(1.35) rotate(-8deg); }
+      55%  { transform: scale(.9) rotate(5deg); }
+      75%  { transform: scale(1.12) rotate(-2deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    @keyframes cardPulseOpen {
+      0%   { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+      25%  { box-shadow: 0 0 0 3px rgba(74,222,128,.35); border-color:#4ade80; }
+      100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+    }
+    @keyframes cardPulseClosed {
+      0%   { box-shadow: 0 0 0 0 rgba(148,163,184,0); }
+      25%  { box-shadow: 0 0 0 3px rgba(148,163,184,.3); border-color:#94a3b8; }
+      100% { box-shadow: 0 0 0 0 rgba(148,163,184,0); }
+    }
+    @keyframes confettiPop {
+      0%   { transform: translateY(0) scale(0); opacity:0; }
+      30%  { transform: translateY(-14px) scale(1); opacity:1; }
+      100% { transform: translateY(-28px) scale(.4); opacity:0; }
+    }
+    .card.flip-open { animation: cardPulseOpen 1.1s ease-out; }
+    .card.flip-closed { animation: cardPulseClosed 1.1s ease-out; }
+    .pill.flipping .dot { animation: flipBounce .7s cubic-bezier(.68,-.55,.27,1.55) !important; }
+    .confetti { position:absolute; top:14px; right:56px; pointer-events:none; }
+    .confetti span { position:absolute; width:6px; height:6px; border-radius:2px; opacity:0; }
     @media (prefers-reduced-motion: reduce) {
-      .dot.on, .dot.on::after, .card { animation: none !important; }
+      .dot.on, .dot.on::after, .card, .card.flip-open, .card.flip-closed,
+      .pill.flipping .dot, .confetti span { animation: none !important; }
     }
 
     .header {
@@ -147,7 +175,7 @@
       <span class="brand-name">Arked Lestari</span>
     </div>
     <h1>What's open right now</h1>
-    <div class="sub">6 cafes &middot; UTM campus</div>
+    <div class="sub">7 cafes &middot; UTM campus</div>
     <div class="live"><span class="live-dot"></span><span id="liveStatus">Connecting&hellip;</span></div>
     <br>
     <a href="admin.html" class="admin-link">&#128100; Cafe owner? Admin panel &rarr;</a>
@@ -179,10 +207,12 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    const CAFES = ['Cafe EastCoast', 'Cafe Lanita', 'Cafe Navy Blue', 'Cafe Western', 'Cafe Ajimory', 'Cafe PakLah'];
+    const CAFES = ['Cafe EastCoast', 'Cafe Lanita', 'Cafe Navy Blue', 'Cafe Western', 'Cafe Ajimory', 'Cafe PakLah', 'Cafe Cikmat'];
 
     let liveData = {};
     let currentFilter = 'all';
+    let prevStatus = {};      // remembers each cafe's last-known status
+    let firstLoad = true;     // don't animate on the very first paint
 
     // ===== Real-time read from Firestore =====
     db.collection('cafes').onSnapshot((snapshot) => {
@@ -219,7 +249,13 @@
         const isOpen = status === 'open';
 
         return `
-          <div class="card ${isOpen ? 'is-open' : ''}" data-status="${status}" data-has-special="${hasSpecial}" style="animation-delay:${i*40}ms">
+          <div class="card ${isOpen ? 'is-open' : ''}" data-cafe="${cafeName}" data-status="${status}" data-has-special="${hasSpecial}" style="animation-delay:${i*40}ms">
+            <div class="confetti" aria-hidden="true">
+              <span style="background:#4ade80; left:0;"></span>
+              <span style="background:#f0a04b; left:10px;"></span>
+              <span style="background:#4ade80; left:-8px;"></span>
+              <span style="background:#fbbf24; left:5px;"></span>
+            </div>
             <div class="card-top">
               <div>
                 <div class="cafe-name">${cafeName}</div>
@@ -238,6 +274,48 @@
         `;
       }).join('');
       applyFilter();
+      animateFlips();
+    }
+
+    // Compare each cafe's new status to its previous one; animate only the changed cards.
+    function animateFlips() {
+      const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      CAFES.forEach(cafeName => {
+        const now = (liveData[cafeName] && liveData[cafeName].status) || 'open';
+        const before = prevStatus[cafeName];
+        prevStatus[cafeName] = now;
+
+        // Skip the first load and cafes that didn't change
+        if (firstLoad || before === undefined || before === now || reduce) return;
+
+        const card = document.querySelector(`.card[data-cafe="${cafeName}"]`);
+        if (!card) return;
+        const pill = card.querySelector('.pill');
+        const isOpen = now === 'open';
+
+        // Bounce the status dot
+        if (pill) {
+          pill.classList.add('flipping');
+          setTimeout(() => pill.classList.remove('flipping'), 800);
+        }
+        // Pulse the card border
+        card.classList.remove('flip-open', 'flip-closed');
+        void card.offsetWidth; // restart animation
+        card.classList.add(isOpen ? 'flip-open' : 'flip-closed');
+
+        // Confetti only when a cafe OPENS (good news)
+        if (isOpen) popConfetti(card);
+      });
+      firstLoad = false;
+    }
+
+    function popConfetti(card) {
+      const spans = card.querySelectorAll('.confetti span');
+      spans.forEach((s, i) => {
+        s.style.animation = 'none';
+        void s.offsetWidth;
+        s.style.animation = `confettiPop .8s ease-out ${i * 40}ms`;
+      });
     }
 
     function applyFilter() {
