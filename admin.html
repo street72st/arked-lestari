@@ -366,7 +366,14 @@
           </div>
           <div class="form-group">
             <label for="cafeName">Your Cafe Name</label>
-            <input type="text" id="cafeName" placeholder="e.g., Cafe EastCoast" required>
+            <select id="cafeName" required style="width:100%;padding:12px;border:1.5px solid #ddd;border-radius:8px;font-size:14px;font-family:inherit;background:white;">
+              <option value="" disabled selected>Select your cafe...</option>
+              <option value="Cafe EastCoast">Cafe EastCoast</option>
+              <option value="Cafe Lanita">Cafe Lanita</option>
+              <option value="Cafe Navy Blue">Cafe Navy Blue</option>
+              <option value="Cafe Western">Cafe Western</option>
+              <option value="Cafe Ajimory">Cafe Ajimory</option>
+            </select>
           </div>
           <button type="submit" class="login-btn" id="registerBtn">Create Account</button>
         </form>
