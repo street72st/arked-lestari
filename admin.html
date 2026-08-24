@@ -451,16 +451,21 @@
       err.classList.add('show');
     }
 
-    // Determine which cafe this logged-in account manages.
-    // Priority: the account's Firebase displayName (set by the admin when creating
-    // the account) -> a previously cached value -> a safe fallback.
+    // Determine which cafe this logged-in account manages by looking up their
+    // email in the Firestore "owners" collection. Each owner doc:
+    //   document ID = the owner's email (lowercase)
+    //   field "cafe" = the exact cafe name, e.g. "Cafe Lanita"
+    // Returns the canonical cafe name, or null if this email isn't mapped.
     function resolveCafeForUser(user) {
-      let name = user.displayName || localStorage.getItem(`cafe_${user.uid}`) || '';
-      name = canonicalName(name);
-      if (name && name !== 'Your Cafe') {
-        localStorage.setItem(`cafe_${user.uid}`, name);
-      }
-      return name || 'Your Cafe';
+      const emailKey = (user.email || '').toLowerCase().trim();
+      return db.collection('owners').doc(emailKey).get()
+        .then((doc) => {
+          if (doc.exists && doc.data().cafe) {
+            return canonicalName(doc.data().cafe);
+          }
+          return null; // no mapping found
+        })
+        .catch(() => null);
     }
 
     function handleLogin(e) {
@@ -474,7 +479,16 @@
       auth.signInWithEmailAndPassword(email, pass)
         .then((userCred) => {
           currentUser = userCred.user;
-          currentCafe = resolveCafeForUser(userCred.user);
+          return resolveCafeForUser(userCred.user);
+        })
+        .then((cafe) => {
+          if (!cafe) {
+            // Logged in, but no cafe assigned to this email yet.
+            showError('This account is not linked to a cafe yet. Contact the site admin.');
+            auth.signOut();
+            return;
+          }
+          currentCafe = cafe;
           loginSuccess();
         })
         .catch((err) => { showError(err.message); })
@@ -617,8 +631,15 @@
     auth.onAuthStateChanged((user) => {
       if (user) {
         currentUser = user;
-        currentCafe = resolveCafeForUser(user);
-        loginSuccess();
+        resolveCafeForUser(user).then((cafe) => {
+          if (!cafe) {
+            // Session exists but email isn't mapped to a cafe - sign out cleanly.
+            auth.signOut();
+            return;
+          }
+          currentCafe = cafe;
+          loginSuccess();
+        });
       }
     });
   </script>
