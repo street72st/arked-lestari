@@ -423,6 +423,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
   <script>
     const firebaseConfig = {
@@ -436,6 +437,7 @@
 
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
+    const db = firebase.firestore();
     console.log("✅ Firebase loaded!");
 
     let currentUser = null;
@@ -540,14 +542,11 @@
     function setStatus(status) {
       document.getElementById('openBtn').className = 'status-btn ' + (status === 'open' ? 'open' : 'inactive');
       document.getElementById('closedBtn').className = 'status-btn ' + (status === 'closed' ? 'closed' : 'inactive');
-      const data = getCafeData();
-      data.status = status;
-      saveCafeDataLocal(data);
+      // Note: status is saved together with everything else when "Save Changes" is clicked.
     }
 
     function getCafeData() {
       return {
-        name: currentCafe,
         status: document.getElementById('openBtn').className.includes('open') ? 'open' : 'closed',
         hours: document.getElementById('hours').value,
         location: document.getElementById('location').value,
@@ -555,44 +554,50 @@
       };
     }
 
+    // ===== SAVE to Firestore (shared across ALL devices) =====
     function saveCafeData() {
       const data = getCafeData();
-      saveCafeDataLocal(data);
-      const msg = document.getElementById('successMsg');
-      msg.classList.add('show');
-      setTimeout(() => msg.classList.remove('show'), 3000);
-    }
-
-    function saveCafeDataLocal(data) {
-      const all = JSON.parse(localStorage.getItem('cafeData')) || {};
       const canon = canonicalName(currentCafe);
-      // Remove any stale duplicate keys for this cafe (e.g. "Cafe Eastcoast" vs "Cafe EastCoast")
-      Object.keys(all).forEach(k => {
-        const norm = k.toLowerCase().replace(/\s+/g, ' ').trim();
-        if (k !== canon && norm === canon.toLowerCase()) {
-          delete all[k];
-        }
+      const btn = document.querySelector('.save-btn');
+      if (btn) { btn.disabled = true; btn.textContent = 'Saving...'; }
+
+      db.collection('cafes').doc(canon).set({
+        status: data.status,
+        hours: data.hours,
+        location: data.location,
+        special: data.special,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }).then(() => {
+        const msg = document.getElementById('successMsg');
+        msg.textContent = '\u2713 Saved! Live on the website for everyone now.';
+        msg.classList.add('show');
+        setTimeout(() => msg.classList.remove('show'), 3000);
+      }).catch((err) => {
+        alert('Could not save: ' + err.message);
+      }).finally(() => {
+        if (btn) { btn.disabled = false; btn.textContent = 'Save Changes'; }
       });
-      all[canon] = { status: data.status, hours: data.hours, location: data.location, special: data.special };
-      localStorage.setItem('cafeData', JSON.stringify(all));
-      localStorage.setItem('cafeDataUpdated', Date.now());
     }
 
+    // ===== LOAD this cafe's current data from Firestore =====
     function loadCafeData() {
-      const all = JSON.parse(localStorage.getItem('cafeData')) || {};
       const canon = canonicalName(currentCafe);
-      const data = all[canon] || all[currentCafe] || {};
-      document.getElementById('hours').value = data.hours || '7:00 AM - 10:00 PM';
-      document.getElementById('location').value = data.location || '';
-      document.getElementById('special').value = data.special || '';
-      const status = data.status || 'open';
-      if (status === 'open') {
-        document.getElementById('openBtn').className = 'status-btn open';
-        document.getElementById('closedBtn').className = 'status-btn inactive';
-      } else {
-        document.getElementById('openBtn').className = 'status-btn inactive';
-        document.getElementById('closedBtn').className = 'status-btn closed';
-      }
+      db.collection('cafes').doc(canon).get().then((doc) => {
+        const data = doc.exists ? doc.data() : {};
+        document.getElementById('hours').value = data.hours || '7:00 AM - 10:00 PM';
+        document.getElementById('location').value = data.location || '';
+        document.getElementById('special').value = data.special || '';
+        const status = data.status || 'open';
+        if (status === 'open') {
+          document.getElementById('openBtn').className = 'status-btn open';
+          document.getElementById('closedBtn').className = 'status-btn inactive';
+        } else {
+          document.getElementById('openBtn').className = 'status-btn inactive';
+          document.getElementById('closedBtn').className = 'status-btn closed';
+        }
+      }).catch((err) => {
+        console.error('Load error:', err);
+      });
     }
 
     function resetInactivityTimer() {
