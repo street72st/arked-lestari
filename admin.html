@@ -387,6 +387,19 @@
         <div class="success-msg" id="successMsg">✓ Changes saved successfully!</div>
         <div class="security-info">✅ Your session is secure. Auto-logout in 30 minutes of inactivity.</div>
       </div>
+
+      <!-- MASTER SWITCH: only visible to the site owner (hidden for cafe owners) -->
+      <div class="cafe-admin-card" id="masterPanel" style="display:none; border:2px solid #f97316;">
+        <div class="cafe-admin-name" style="margin-bottom:6px;">🛠️ Site Owner Controls</div>
+        <p style="font-size:13px;color:#666;margin-bottom:14px;">
+          These buttons change <strong>every</strong> cafe at once. Only you can see this.
+        </p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <button class="status-btn closed" onclick="setAllCafes('closed')" style="padding:10px 20px;">Close ALL cafes</button>
+          <button class="status-btn open" onclick="setAllCafes('open')" style="padding:10px 20px;">Open ALL cafes</button>
+        </div>
+        <div class="success-msg" id="masterMsg" style="margin-top:12px;"></div>
+      </div>
     </div>
   </div>
 
@@ -413,6 +426,10 @@
     let currentCafe = null;
     let inactivityTimeout;
     const INACTIVITY_TIME = 30 * 60 * 1000;
+
+    // The email of the SITE OWNER (you). Only this account sees the master switch.
+    // To change owner later, update this to the new owner's login email.
+    const SITE_OWNER_EMAIL = 'husniothman2304@gmail.com';
 
     // The 5 official cafe names the main site displays.
     const OFFICIAL_CAFES = ['Cafe EastCoast', 'Cafe Lanita', 'Cafe Navy Blue', 'Cafe Western', 'Cafe Ajimory', 'Cafe PakLah'];
@@ -469,8 +486,45 @@
       document.getElementById('loginContainer').style.display = 'none';
       document.getElementById('dashboard').classList.add('active');
       document.getElementById('adminCafeName').textContent = currentCafe;
+      // Show the master switch ONLY for the site owner account
+      const isOwner = currentUser && currentUser.email &&
+        currentUser.email.toLowerCase() === SITE_OWNER_EMAIL.toLowerCase();
+      document.getElementById('masterPanel').style.display = isOwner ? 'block' : 'none';
       loadCafeData();
       resetInactivityTimer();
+    }
+
+    // ===== Set EVERY cafe to open/closed in one action (site owner only) =====
+    // Creates the document for any cafe that doesn't exist yet, and preserves
+    // existing hours/location/special - it only changes the status field.
+    function setAllCafes(newStatus) {
+      if (!currentUser || currentUser.email.toLowerCase() !== SITE_OWNER_EMAIL.toLowerCase()) {
+        alert('Only the site owner can use this.');
+        return;
+      }
+      const verb = newStatus === 'closed' ? 'CLOSE' : 'OPEN';
+      if (!confirm(`Are you sure you want to ${verb} ALL cafes? This affects the whole site.`)) return;
+
+      const msg = document.getElementById('masterMsg');
+      msg.textContent = 'Working...';
+      msg.classList.add('show');
+
+      // merge:true means we only touch the status field and leave everything else intact
+      const batch = OFFICIAL_CAFES.map(name =>
+        db.collection('cafes').doc(name).set({
+          status: newStatus,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true })
+      );
+
+      Promise.all(batch)
+        .then(() => {
+          msg.textContent = `\u2713 All ${OFFICIAL_CAFES.length} cafes set to ${newStatus.toUpperCase()}.`;
+          setTimeout(() => msg.classList.remove('show'), 4000);
+        })
+        .catch((err) => {
+          msg.textContent = 'Error: ' + err.message;
+        });
     }
 
     function logout() {
