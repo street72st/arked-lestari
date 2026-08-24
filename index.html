@@ -3,57 +3,197 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arked Lestari Cafe Finder</title>
+  <title>Arked Lestari - Cafe Finder</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='75' font-size='75'>&#9749;</text></svg>">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-    .header { background: #1f2937; color: white; padding: 30px; text-align: center; border-radius: 8px; margin-bottom: 30px; }
-    .header h1 { font-size: 32px; margin-bottom: 10px; }
-    .cafe { background: white; padding: 20px; margin-bottom: 20px; border-radius: 8px; border-left: 4px solid #007bff; }
-    .cafe h2 { font-size: 22px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .status-open { background: #28a745; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; }
-    .status-closed { background: #dc3545; color: white; padding: 4px 12px; border-radius: 4px; font-size: 12px; }
-    .info { margin: 10px 0; font-size: 14px; color: #666; }
-    .special { background: #fff3cd; padding: 12px; margin-top: 12px; border-radius: 4px; border-left: 4px solid #ffc107; }
-    .special-title { font-weight: bold; color: #856404; display: block; margin-bottom: 5px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif; background: #f8f9fa; color: #2c3e50; }
+
+    .header {
+      background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+      color: white; padding: 2.5rem 1.5rem; text-align: center;
+      border-bottom: 5px solid #f97316; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .header h1 { font-size: 32px; font-weight: 700; margin-bottom: 0.5rem; }
+    .header p { font-size: 15px; opacity: 0.95; }
+    .admin-link {
+      display: inline-block; margin-top: 14px; background: rgba(255,255,255,0.15);
+      color: #fff; text-decoration: none; padding: 8px 18px; border-radius: 20px;
+      font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.3);
+      transition: all 0.2s;
+    }
+    .admin-link:hover { background: #f97316; border-color: #f97316; }
+
+    .filter-section {
+      background: white; padding: 1.25rem 1.5rem; margin: 1.5rem auto 0; max-width: 900px;
+      border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+      display: flex; gap: 10px; flex-wrap: wrap;
+    }
+    .filter-btn {
+      padding: 8px 16px; border: 2px solid #ddd; background: white; color: #666;
+      border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.2s;
+    }
+    .filter-btn.active { background: #1f2937; color: white; border-color: #1f2937; }
+    .filter-btn:hover { border-color: #1f2937; }
+
+    .cafe-grid { display: grid; gap: 1.5rem; padding: 1.5rem; max-width: 900px; margin: 0 auto; }
+    .cafe-card {
+      background: white; border-radius: 10px; overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .cafe-card:hover { transform: translateY(-4px); box-shadow: 0 8px 16px rgba(0,0,0,0.15); }
+    .cafe-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.25rem; border-bottom: 1px solid #f0f0f0; background: #fafafa;
+    }
+    .cafe-name { font-size: 18px; font-weight: 700; color: #1f2937; }
+    .status-badge { padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; }
+    .status-badge.open { background: #dcfce7; color: #166534; }
+    .status-badge.closed { background: #fee2e2; color: #991b1b; }
+    .cafe-info { padding: 1.25rem; display: flex; flex-direction: column; gap: 10px; }
+    .cafe-info-item { display: flex; align-items: center; gap: 12px; color: #666; font-size: 14px; }
+    .cafe-info-item svg { width: 20px; height: 20px; flex-shrink: 0; color: #999; }
+    .special {
+      padding: 1rem 1.25rem; background: linear-gradient(135deg, #fef3c7 0%, #fcd34d 100%);
+      border-top: 1px solid #fbbf24; font-size: 14px; color: #92400e; line-height: 1.6;
+    }
+    .special-title {
+      display: block; font-weight: 700; margin-bottom: 6px; color: #b45309;
+      text-transform: uppercase; font-size: 12px; letter-spacing: 0.5px;
+    }
+    .no-special { display: block; font-style: italic; color: #b45309; }
+
+    @media (max-width: 600px) {
+      .header h1 { font-size: 24px; }
+      .filter-section { margin: 1rem; padding: 1rem; }
+      .cafe-grid { padding: 1rem; }
+    }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>☕ Arked Lestari Cafes</h1>
-    <p>Click Admin Link to Update</p>
-    <p><a href="admin.html" style="color: #ffc107; text-decoration: none;">→ Admin Panel</a></p>
+    <h1>&#9749; Arked Lestari</h1>
+    <p>Cafe Directory &middot; UTM Campus</p>
+    <p style="font-size:12px;margin-top:8px;">Last updated: <span id="updateTime">--</span></p>
+    <a href="admin.html" class="admin-link">&#128100; Cafe Owner? Admin Panel &rarr;</a>
   </div>
 
-  <div id="cafes"></div>
+  <div class="filter-section">
+    <button class="filter-btn active" onclick="filterCafes('all', event)">All Cafes</button>
+    <button class="filter-btn" onclick="filterCafes('open', event)">Open Now</button>
+    <button class="filter-btn" onclick="filterCafes('special', event)">Today's Special</button>
+  </div>
+
+  <div class="cafe-grid" id="cafeGrid"></div>
 
   <script>
+    // The 5 official cafes (display names)
     const CAFES = ['Cafe EastCoast', 'Cafe Lanita', 'Cafe Navy Blue', 'Cafe Western', 'Cafe Ajimory'];
 
-    function render() {
-      const data = JSON.parse(localStorage.getItem('cafeData') || '{}');
-      let html = '';
-
-      CAFES.forEach(cafe => {
-        const info = data[cafe] || { status: 'open', hours: '7:00 AM - 10:00 PM', location: '', special: '' };
-        const statusClass = info.status === 'open' ? 'status-open' : 'status-closed';
-        const statusText = info.status === 'open' ? 'OPEN' : 'CLOSED';
-
-        html += `
-          <div class="cafe">
-            <h2>${cafe} <span class="${statusClass}">${statusText}</span></h2>
-            <div class="info">⏰ ${info.hours}</div>
-            <div class="info">📍 ${info.location || '(not set)'}</div>
-            ${info.special ? `<div class="special"><span class="special-title">TODAY'S SPECIAL:</span>${info.special}</div>` : ''}
-          </div>
-        `;
-      });
-
-      document.getElementById('cafes').innerHTML = html;
+    // Read all saved data
+    function getAllData() {
+      try { return JSON.parse(localStorage.getItem('cafeData')) || {}; }
+      catch (e) { return {}; }
     }
 
-    // Update every 500ms
-    setInterval(render, 500);
+    // SAFETY NET: find a cafe's data even if the saved key has different
+    // capitalisation or extra spaces (e.g. "Cafe Eastcoast" vs "Cafe EastCoast").
+    function findCafeData(all, officialName) {
+      // 1. Exact match first
+      if (all[officialName]) return all[officialName];
+      // 2. Case-insensitive / trimmed match
+      const target = officialName.toLowerCase().replace(/\s+/g, ' ').trim();
+      for (const key in all) {
+        const norm = key.toLowerCase().replace(/\s+/g, ' ').trim();
+        if (norm === target) return all[key];
+      }
+      return null;
+    }
+
+    let currentFilter = 'all';
+    let lastSnapshot = '';
+
+    function render() {
+      const all = getAllData();
+      const grid = document.getElementById('cafeGrid');
+
+      grid.innerHTML = CAFES.map(cafeName => {
+        const data = findCafeData(all, cafeName) || {};
+        const status   = data.status   || 'open';
+        const hours    = data.hours    || '7:00 AM - 10:00 PM';
+        const location = data.location || '';
+        const special  = data.special  || '';
+
+        const hasSpecial = special.trim().length > 0;
+        const statusClass = status === 'open' ? 'open' : 'closed';
+        const statusText  = status === 'open' ? 'Open' : 'Closed';
+
+        return `
+          <div class="cafe-card" data-status="${status}" data-has-special="${hasSpecial}">
+            <div class="cafe-header">
+              <div class="cafe-name">${cafeName}</div>
+              <span class="status-badge ${statusClass}">${statusText}</span>
+            </div>
+            <div class="cafe-info">
+              <div class="cafe-info-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>${hours}</span>
+              </div>
+              <div class="cafe-info-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                  <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                <span>${location || 'Location not set'}</span>
+              </div>
+            </div>
+            <div class="special">
+              ${hasSpecial
+                ? `<span class="special-title">Today's Special</span>${special}`
+                : '<span class="no-special">No specials today</span>'}
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      applyFilter();
+      document.getElementById('updateTime').textContent = new Date().toLocaleTimeString();
+    }
+
+    function applyFilter() {
+      document.querySelectorAll('.cafe-card').forEach(card => {
+        const status = card.dataset.status;
+        const hasSpecial = card.dataset.hasSpecial === 'true';
+        let show = true;
+        if (currentFilter === 'open') show = status === 'open';
+        else if (currentFilter === 'special') show = hasSpecial;
+        card.style.display = show ? 'block' : 'none';
+      });
+    }
+
+    function filterCafes(type, ev) {
+      currentFilter = type;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      if (ev && ev.target) ev.target.classList.add('active');
+      applyFilter();
+    }
+
+    // Auto-update: re-render only when the data actually changes
+    function checkForChanges() {
+      const snapshot = localStorage.getItem('cafeData') || '';
+      if (snapshot !== lastSnapshot) {
+        lastSnapshot = snapshot;
+        render();
+      }
+    }
+    setInterval(checkForChanges, 500);
+    window.addEventListener('storage', render); // cross-tab
+
+    // First paint
+    lastSnapshot = localStorage.getItem('cafeData') || '';
     render();
   </script>
 </body>
